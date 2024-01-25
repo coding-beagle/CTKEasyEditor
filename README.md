@@ -1,2 +1,2 @@
-# ctkeasyedit
+# CTKEasyEdit
 An easy GUI editor for CustomTKinter in Python
