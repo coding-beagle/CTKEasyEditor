@@ -28,5 +28,11 @@ root.iconphoto(True, icon_path)
 """
     return text + "\n"
         
+
+def widget_code(widget): # take in widget, create an instance of it using its name, configure all of its kwargs,
+    text = f"""
+
+"""
+
 def main_loop():
     return "root.mainloop()\n"

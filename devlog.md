@@ -33,11 +33,12 @@ Completed:
 
 Todo:
 
-- Implement widget editing functionality
 - God please fix the code why is it so messy and bad and ill have to go through and reformat it again why did i choose python devleopemneinodjkosjopisdojiiogio;sg
 - Segmented button doesn't have drag functionality implemented (not in creation list for now)
 - TabView not implemented yet either
-- Add export to .py functionality
+- Finish widget editing functionality
+- Add logic to do naming (i.e. click on widget in active widgets and then rename that)
+- Add logic to move around active widgets in active tab (more drag and drop????)
 
 Bugs:
 
@@ -46,4 +47,7 @@ Bugs:
 Completed:
 
 - Fixed widget handler
+- Added a simple file selector widget
 - Added widget creation functionality
+- Added export to .py for basic root boilerplate
+- Started with widget editing functionality

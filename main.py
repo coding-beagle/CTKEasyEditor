@@ -7,8 +7,10 @@ from CTkMenuBar import *
 from icecream import ic
 import keyboard
 from CTkTree import *
-from ActiveWidgetHandler import *
+from activewidgethandler import *
 from boilerplate import *
+from settingseditor import *
+from CTkFileSelector import *
 
 widget_types = {
     "Add Widgets Here": None,
@@ -90,15 +92,9 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
         app.title(f"{entry_name.get()}")
-    if(entry_icon_file.get() != ""):
-        icopath = ImageTk.PhotoImage(file=entry_icon_file.get())
+    if(file_selector.get_path() != ""):
+        icopath = ImageTk.PhotoImage(file=file_selector.get_path())
         app.iconphoto(False, icopath)
-
-def selectIcon():
-    curr_dir = os.getcwd()
-    path = filedialog.askopenfile(initialdir=curr_dir)
-    if(path.name != ""):
-        entry_icon_file.insert(0, str(path.name))
 
 def delete_widget_from_frame(widget):
     widget.get('widget').destroy()
@@ -108,7 +104,7 @@ def delete_widget_from_frame(widget):
 def update_active_widgets():
     for widget in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget.get('widget')) == False):
-            frame_widgets.add_widget(widget.get('widget'),name=widget.get('widget_name'),edit_cb=lambda:print("Edit"), delete_cb=lambda w=widget: delete_widget_from_frame(w))
+            frame_widgets.add_widget(widget.get('widget'),name=widget.get('widget_name'),edit_cb=lambda w=widget: open_editor_window(w), delete_cb=lambda w=widget: delete_widget_from_frame(w))
             widget.get('widget').bind("<Button-3>", lambda event, w=widget: do_popup(event, widget=w.get('widget'), frame=RightClickMenu))
             make_draggable(widget)
     draw_widgets()
@@ -118,7 +114,7 @@ def create_widget(widget_type, **kwargs):
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
-        created_widget = {"widget":widget_class(app, **kwargs),
+        created_widget = {"widget":widget_class(app, **kwargs), # todo add widget ids
                           "location": ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2),
                           "widget_name": str(widget_type),
                           "kwargs": kwargs}
@@ -138,9 +134,11 @@ def generate_file(path):
         app_height = entry_height.get()
         app_width = entry_width.get()
         if(app_height != "" and app_width != ""):
-            f.write(basic_app_window(app_width, app_height, entry_icon_file.get(), path, entry_name.get()))
+            f.write(basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
         else:
-            raise ValueError("Bad Dimensions For App!")
+            raise ValueError("Bad Dimensions For App!") # todo implement top level error windows for this
+        for widget in active_widgets():
+            f.write()
         f.write(main_loop())
 
 def save_logic():
@@ -156,16 +154,23 @@ def duplicate_current_widget():
             create_widget(active_widget.get("widget_name"))
             break
 
+def edit_widget_attributes(widget):
+    properties = widget.get("kwargs")
+    widget.get("widget").configure(**properties)
+
+def open_editor_window(widget):
+    AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
+
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
 
 editor_window = ctk.CTk()
 editor_window.geometry("400x500")
 editor_window.resizable(width=False, height=False)
-editor_window.title("CTk EasyEdit")
+editor_window.title("CTk EasyEditor")
 
 app = create_app_window()
-
 
 # menubar settings starts
 menu = CTkMenuBar(master=editor_window)
@@ -202,13 +207,9 @@ entry_name = ctk.CTkEntry(window_settings_frame, placeholder_text= "App Name")
 entry_name.place(x=55, y=70)
 label_left_name = ctk.CTkLabel(window_settings_frame, text="Title")
 label_left_name.place(x=10, y=70)
-
-entry_icon_file = ctk.CTkEntry(window_settings_frame, placeholder_text= "Path/to/Icon")
-entry_icon_file.place(x=55, y=100)
-label_left_entry_icon = ctk.CTkLabel(window_settings_frame, text="Icon")
-label_left_entry_icon.place(x=10, y=100)
-button_select_icon = ctk.CTkButton(window_settings_frame, text="...", width=10, height=25, command=selectIcon)
-button_select_icon.place(x=200, y=102)
+#x=10, y=100
+file_selector = CTkFileSelector(window_settings_frame, entry_padding=(20, 5), label="Icon")
+file_selector.place(x=10, y=100)
 
 button_apply_settings = ctk.CTkButton(window_settings_frame, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
 button_apply_settings.place(x=250, y = 10)
