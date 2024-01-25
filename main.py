@@ -8,6 +8,7 @@ from icecream import ic
 import keyboard
 from CTkTree import *
 from ActiveWidgetHandler import *
+from boilerplate import *
 
 widget_types = {
     "Add Widgets Here": None,
@@ -115,12 +116,12 @@ def update_active_widgets():
 def create_widget(widget_type, **kwargs):
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
-
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
         created_widget = {"widget":widget_class(app, **kwargs),
-                          "location": (app.winfo_width()/2, app.winfo_height()/2),
-                          "widget_name": str(widget_type)}
+                          "location": ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2),
+                          "widget_name": str(widget_type),
+                          "kwargs": kwargs}
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
         active_widgets.append(created_widget)
@@ -130,6 +131,30 @@ def draw_widgets():
     for widget in active_widgets:
         x,y = widget.get('location')
         widget.get('widget').place(x=x,y=y)
+
+def generate_file(path):
+    with open(f"{path}/generated_file.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
+        f.write(imports())
+        app_height = entry_height.get()
+        app_width = entry_width.get()
+        if(app_height != "" and app_width != ""):
+            f.write(basic_app_window(app_width, app_height, entry_icon_file.get(), path, entry_name.get()))
+        else:
+            raise ValueError("Bad Dimensions For App!")
+        f.write(main_loop())
+
+def save_logic():
+    curr_dir = os.getcwd()
+    path = filedialog.askdirectory(initialdir=curr_dir)
+    if(path != ""):
+        generate_file(path)
+
+def duplicate_current_widget():
+    global current_widget
+    for active_widget in active_widgets:
+        if current_widget == active_widget.get("widget"):
+            create_widget(active_widget.get("widget_name"))
+            break
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -141,9 +166,17 @@ editor_window.title("CTk EasyEdit")
 
 app = create_app_window()
 
+
+# menubar settings starts
 menu = CTkMenuBar(master=editor_window)
-menu.add_cascade("File")
-menu.add_cascade("Edit")
+
+menubar_button_file = menu.add_cascade("File")
+menubar_button_edit = menu.add_cascade("Edit")
+
+dropdown_file = CustomDropdownMenu(widget=menubar_button_file, corner_radius=0)
+dropdown_file.add_option(option="Export as .py", command=save_logic)
+
+# menubar settings end
 
 # windows settings starts
 label_window_settings = ctk.CTkLabel(editor_window, text="Window Settings")
@@ -200,8 +233,8 @@ frame_widgets.place(x=10,y=230)
 current_widget = None
 
 RightClickMenu = tk.Menu(app, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
-RightClickMenu.add_command(label="Duplicate", command=lambda: print("Duplicate Logic"))
-RightClickMenu.add_command(label="Delete", command=lambda: destroy_current_widget())
+RightClickMenu.add_command(label="Duplicate", command=duplicate_current_widget)
+RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
 
 app.bind("<1>", lambda event: event.widget.focus_set())
 
