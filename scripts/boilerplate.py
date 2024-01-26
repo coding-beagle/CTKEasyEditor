@@ -30,7 +30,7 @@ root.iconphoto(True, icon_path)
     return text + "\n"
         
 
-def widget_code(widget, modulename="ctk"): # take in widget, create an instance of it using its name, configure all of its kwargs,
+def widget_code(widget, output_src, modulename="ctk"): # take in widget, create an instance of it using its name, configure all of its kwargs,
     text = ""
     kwargs = widget.get("kwargs")
 
@@ -39,6 +39,12 @@ def widget_code(widget, modulename="ctk"): # take in widget, create an instance 
     
     widget_name = widget.get("widget_id")
     widget_name = widget_name.replace(" ", "_") 
+
+    if(image_exists):
+        image_path = kwargs.get('image_path')
+        filename = image_path.split("/")[-1]
+        shutil.copyfile(image_path, f"{output_src}/{filename}")
+        text += f"image_{widget_name} = {modulename}.CTkImage(dark_image=Image.open('{output_src}/{filename}'), size=({kwargs.get('image_size_x')}, {kwargs.get('image_size_y')}))"
 
     for key, arg in kwargs.items():
         if(key == "image_path" or key == "image_size_x" or key == "image_size_y"):
@@ -54,9 +60,6 @@ def widget_code(widget, modulename="ctk"): # take in widget, create an instance 
         else:
             arguments += str(arg)
 
-    if(image_exists):
-        text += f"image_{widget_name} = {modulename}.CTkImage(dark_image=Image.open('{kwargs.get('image_path')}'), size=({kwargs.get('image_size_x')}, {kwargs.get('image_size_y')}))"
-
     x,y = widget.get("location")
     
     text += f"""
@@ -66,4 +69,4 @@ def widget_code(widget, modulename="ctk"): # take in widget, create an instance 
     return text
 
 def main_loop():
-    return "root.mainloop()\n"
+    return "root.mainloop()"

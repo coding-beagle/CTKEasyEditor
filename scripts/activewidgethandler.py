@@ -34,10 +34,10 @@ class WidgetName(ctk.CTkFrame):
         self.entry.bind('<Button-1>', self.edit_text)
         self.entry.bind('<Return>', self.stop_edit_text)
 
-        self.edit_button = ctk.CTkButton(self, font=('helvetica', -15),text="⛭", command=edit_button_cb, width=30, height=30)
+        self.edit_button = ctk.CTkButton(self, font=('roboto', -15),text="⛭", command=edit_button_cb, width=30, height=30)
         self.edit_button.grid(column=2, row=0, padx=2,pady=2, sticky='e')
         
-        self.remove_button = ctk.CTkButton(self, font=(('helvetica', -20)), text="×", command=delete_button_cb, width=30, height=30)
+        self.remove_button = ctk.CTkButton(self, font=(('roboto', -20)), text="×", command=delete_button_cb, width=30, height=30)
         self.remove_button.grid(column=3, row=0, padx=2,pady=2, sticky='e')
 
     def edit_text(self, event):

@@ -142,7 +142,7 @@ def generate_file(path):
             raise ValueError("Bad Dimensions For App!") # todo implement top level error windows for this
         
         for widget in active_widgets:
-            f.write(str(widget_code(widget)))
+            f.write(str(widget_code(widget, path)))
 
         f.write(main_loop())
 
@@ -196,7 +196,6 @@ menubar_button_edit = menu.add_cascade("Edit")
 
 dropdown_file = CustomDropdownMenu(widget=menubar_button_file, corner_radius=0)
 dropdown_file.add_option(option="Export as .py", command=save_logic)
-
 # menubar settings end
 
 # windows settings starts
@@ -223,7 +222,7 @@ entry_name = ctk.CTkEntry(window_settings_frame, placeholder_text= "App Name")
 entry_name.place(x=55, y=70)
 label_left_name = ctk.CTkLabel(window_settings_frame, text="Title")
 label_left_name.place(x=10, y=70)
-#x=10, y=100
+
 file_selector = CTkFileSelector(window_settings_frame, entry_padding=(20, 5), label="Icon")
 file_selector.place(x=10, y=100)
 

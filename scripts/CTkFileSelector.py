@@ -21,3 +21,6 @@ class CTkFileSelector(ctk.CTkFrame):
     
     def get_path(self):
         return self.entry_file_path.get()
+
+    def get_entry_element(self):
+        return self.entry_file_path
