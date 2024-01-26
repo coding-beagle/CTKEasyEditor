@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
-from PIL import ImageTk
+from PIL import ImageTk, Image
 import customtkinter as ctk
 from CTkMenuBar import *
 from icecream import ic
@@ -46,6 +46,7 @@ def on_drag_motion(event):
     x = widget.winfo_x() - widget._drag_start_x + event.x
     y = widget.winfo_y() - widget._drag_start_y + event.y
 
+    # todo these methods snap based on the widget's origin at top left, not the center
     if(abs(widget.winfo_x() - widget._drag_start_x + event.x - int(app.winfo_width()) / 2) < app.winfo_width()/20 and not(keyboard.is_pressed("ctrl"))): # snapping x
         x = (app.winfo_width() - widget.winfo_width()) / 2
     
@@ -102,11 +103,11 @@ def delete_widget_from_frame(widget):
     active_widgets.remove(widget)
 
 def update_active_widgets():
-    for widget in active_widgets:           # we want to call these everytime a new widget is added
-        if(frame_widgets.check_widget(widget.get('widget')) == False):
-            frame_widgets.add_widget(widget.get('widget'),name=widget.get('widget_name'),edit_cb=lambda w=widget: open_editor_window(w), delete_cb=lambda w=widget: delete_widget_from_frame(w))
-            widget.get('widget').bind("<Button-3>", lambda event, w=widget: do_popup(event, widget=w.get('widget'), frame=RightClickMenu))
-            make_draggable(widget)
+    for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
+        if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
+            frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w))
+            widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance: do_popup(event, widget=w.get('widget'), frame=RightClickMenu))
+            make_draggable(widget_instance)
     draw_widgets()
 
 def create_widget(widget_type, **kwargs):
@@ -114,10 +115,12 @@ def create_widget(widget_type, **kwargs):
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
-        created_widget = {"widget":widget_class(app, **kwargs), # todo add widget ids
+        created_widget = {"widget":widget_class(app, **kwargs),
                           "location": ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2),
-                          "widget_name": str(widget_type),
-                          "kwargs": kwargs}
+                          "widget_name": str(widget_type),  # todo check why we need this
+                          "widget_type": str(widget_class),
+                          "kwargs": kwargs,
+                          "widget_id": f"{widget_type} {len(active_widgets)}"}  # todo adjust this to be based on the number of widgets of the same type
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
         active_widgets.append(created_widget)
@@ -137,8 +140,10 @@ def generate_file(path):
             f.write(basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
         else:
             raise ValueError("Bad Dimensions For App!") # todo implement top level error windows for this
-        for widget in active_widgets():
-            f.write()
+        
+        for widget in active_widgets:
+            f.write(str(widget_code(widget)))
+
         f.write(main_loop())
 
 def save_logic():
@@ -155,12 +160,23 @@ def duplicate_current_widget():
             break
 
 def edit_widget_attributes(widget):
-    properties = widget.get("kwargs")
-    widget.get("widget").configure(**properties)
+    try:
+        properties = widget.get("kwargs")
+        widget.get("widget").configure(**properties)
+    except ValueError:
+        if(widget.get("kwargs").get("image_path")):
+            image = ctk.CTkImage(dark_image=Image.open(widget.get("kwargs").get("image_path")), size=(widget.get("kwargs").get("image_size_x"), widget.get("kwargs").get("image_size_y")))
+            widget.get("widget").configure(image=image)
 
 def open_editor_window(widget):
     AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
 
+def change_widget_id(widget, id):
+    for widgets in active_widgets:
+        if (widgets.get("widget_id") == id and widgets != widget):
+            raise NameError ("There is already an item with this name!")
+        else:
+            widget["widget_id"] = id
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")

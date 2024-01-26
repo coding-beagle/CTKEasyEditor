@@ -3,10 +3,10 @@ from tkinter import filedialog
 import os
 
 class CTkFileSelector(ctk.CTkFrame):
-    def __init__(self, *args, label, select_button_width=10, select_button_height=25, entry_text="file/path", entry_padding, **kwargs):
+    def __init__(self, *args, label, select_button_width=10, select_button_height=25, entry_width=50, entry_height=30, entry_text="file/path", entry_padding, **kwargs):
         super().__init__(*args, *kwargs)
         self.configure(fg_color="transparent")
-        self.entry_file_path = ctk.CTkEntry(self, placeholder_text=entry_text)
+        self.entry_file_path = ctk.CTkEntry(self, placeholder_text=entry_text, height=entry_height, width=entry_width)
         self.entry_file_path.grid(column=1, row=0,padx=entry_padding)
         self.label_entry_name = ctk.CTkLabel(self, text=label)
         self.label_entry_name.grid(column=0, row=0, sticky='w')
