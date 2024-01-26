@@ -9,12 +9,12 @@ class AttributeEditorWindow(ctk.CTkFrame):
     "Label": ["size_adjustments", "image_adjustments","text_adjustments"],
     "Text Box": ["size_adjustments", "text_adjustments"], # uncomplete
     "Check Box": ["size_adjustments", "text_adjustments", "checkbox"],
-    # "Combo Box": ctk.CTkComboBox,
-    # "Entry": ctk.CTkEntry,
-    # "Frame": ctk.CTkFrame,
-    # "Option Menu": ctk.CTkOptionMenu,
-    # "Progress Bar": ctk.CTkProgressBar,
-    # "Radio": ctk.CTkRadioButton,
+    "Combo Box": ["size_adjustments"],
+    "Entry": ["size_adjustments", "placeholder_text"],
+    "Frame": ["size_adjustments"],
+    "Option Menu": ["size_adjustments"],
+    "Progress Bar": ["size_adjustments"],
+    "Radio": ["size_adjustments"],
     # "Scrollable Frame": ctk.CTkScrollableFrame,
     # "Scroll Bar": ctk.CTkScrollbar,
     # "Segment Button": ctk.CTkSegmentedButton,
@@ -48,8 +48,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
         
         if("size_adjustments" in self.attributes_to_edit):
             self.current_y = self.size_y
-            self.size_y += 100
-            self.frame_size_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 90)
+            self.size_y += 125
+            self.frame_size_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 115)
             self.frame_size_adjustments.place(x=10, y=self.current_y)
 
             self.label_width = ctk.CTkLabel(self.frame_size_adjustments, text="Width")
@@ -73,9 +73,17 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.label_height_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
             self.label_height_px.place(x=260, y=55)
 
+            self.label_border_width = ctk.CTkLabel(self.frame_size_adjustments, text="Border Width")
+            self.label_border_width.place(x=10, y=80)
+            self.entry_border_width = ctk.CTkEntry(self.frame_size_adjustments, placeholder_text="width", width=50, height=10)
+            self.entry_border_width.place(x=205, y=83)
+            self.label_border_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
+            self.label_border_width_px.place(x=260, y=80)
+
             self.property_entries["height"] = {"entry": self.entry_height, "type": int}
             self.property_entries["width"] = {"entry": self.entry_width, "type": int}
             self.property_entries["corner_radius"] = {"entry": self.entry_corner_radius, "type": int}
+            self.property_entries["border_width"] = {"entry": self.entry_border_width, "type": int}
 
         if("text_adjustments" in self.attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
@@ -147,6 +155,25 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["checkbox_width"] = {"entry": self.entry_checkbox_width, "type": int}
             self.property_entries["checkbox_height"] = {"entry": self.entry_checkbox_height, "type": int}
 
+        if("placeholder_text" in self.attributes_to_edit):
+            self.current_y = self.size_y       # these windows always get added at the bottom
+            self.size_y += 70
+            self.frame_placeholder_text = ctk.CTkFrame(self.toplevel, width=280, height = 60)
+            self.frame_placeholder_text.place(x=10, y=self.current_y)
+
+            self.label_placeholder_text = ctk.CTkLabel(self.frame_placeholder_text, text="Placeholder Text")
+            self.label_placeholder_text.place(x=10, y=5)
+            self.entry_placeholder_text = ctk.CTkEntry(self.frame_placeholder_text, placeholder_text="text", width=70, height=10)
+            self.entry_placeholder_text.place(x=205, y=8)
+
+            self.label_hidetext = ctk.CTkLabel(self.frame_placeholder_text, text="Hide inputs (*)")
+            self.label_hidetext.place(x=10, y=30)
+            self.checkbox_hidetext = ctk.CTkCheckBox(self.frame_placeholder_text,text=" ", width=70, height=10, onvalue='*', offvalue='')
+            self.checkbox_hidetext.place(x=250, y=33)
+
+            self.property_entries["placeholder_text"] = {"entry": self.entry_placeholder_text, "type": str}
+            self.property_entries["show"] = {"entry": self.checkbox_hidetext, "type": str}
+
         editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
         _, editor_size_y = editor_size.split("x")
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
@@ -163,7 +190,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
                     value = info["entry"].get().strip()
                 if info["type"] == int and value.isdigit():
                     kwargs[prop] = int(value)
-                elif info["type"] == str and value:
+                elif info["type"] == str and value or prop=="show":
                     kwargs[prop] = str(value)
                 elif info["type"] == tuple and value[0] and value[1]:
                     kwargs[prop] = (str(value[0]), int(value[1]))

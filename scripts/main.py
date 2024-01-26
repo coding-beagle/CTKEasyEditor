@@ -179,7 +179,7 @@ def change_widget_id(widget, id):
             widget["widget_id"] = id
 
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("green")
+ctk.set_default_color_theme("blue")
 
 editor_window = ctk.CTk()
 editor_window.geometry("400x500")

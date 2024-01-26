@@ -51,3 +51,28 @@ Completed:
 - Added widget creation functionality
 - Added export to .py for basic root boilerplate
 - Started with widget editing functionality
+
+**26-01-2024**
+
+Big progress day, uni exams are done
+
+Todo:
+
+- Continue adding the editing menus for each widget (the specific ones are annoying)
+- Add Edit -> Preferences
+- - Preferences should contain things like export type (OOP mode or Procedural, etc),
+- - Also things like what is the ctk library called
+- Add Editor saving system, i.e. File -> save, File -> open etc, (unsure of implementation)
+- Active widget hierarchy adjustments (one fears the thought of touching activewidgethandler.py)
+- Theme editor implementation
+
+Bugs:
+
+- Need to reopen window with all drawn elemnts when it is closed
+- Not a bug, but figure out a way to only import PIL libraries if it is needed, e.g. if there is an image object or something
+
+Completed:
+
+- Added dynamic system for adding widget editing
+- Completed a few of the important widgets
+- Added export to .py (only for procedural)
