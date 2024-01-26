@@ -4,6 +4,8 @@ An easy GUI editor for CustomTKinter in Python
 
 **Note** this is still a work in progress:
 
+![Alt text](/screenshots/ss1.png "Example Screenshot")
+
 To install and run:
 
 ```
