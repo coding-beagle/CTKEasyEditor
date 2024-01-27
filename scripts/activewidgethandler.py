@@ -33,6 +33,7 @@ class WidgetName(ctk.CTkFrame):
         self.entry.grid(column=0, row=0, sticky='w', columnspan=1, padx=5)
         self.entry.bind('<Button-1>', self.edit_text)
         self.entry.bind('<Return>', self.stop_edit_text)
+        self.entry.bind('<FocusOut>', self.stop_edit_text)
 
         self.edit_button = ctk.CTkButton(self, font=('roboto', -15),text="⛭", command=edit_button_cb, width=30, height=30)
         self.edit_button.grid(column=2, row=0, padx=2,pady=2, sticky='e')

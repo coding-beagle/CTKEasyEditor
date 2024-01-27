@@ -36,7 +36,8 @@ export_preferences = {
     "Export as OOP?": True,
     "CustomTkinter Module Name:": "ctk",
     "Tkinter Module Name:": "tk",
-    "Root Name:": "root"
+    "Root Name:": "root",
+    "Class Name (OOP Only):": "Root"
 }
 
 def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object and finds its corresponding entry in the active_widgets dictionary
@@ -55,14 +56,16 @@ def on_drag_start(event):
 
 def on_drag_motion(event):
     widget = event.widget.master
+    widget_half_height = widget.cget("height") / 2
+    widget_half_width = widget.cget("width") / 2 
     x = widget.winfo_x() - widget._drag_start_x + event.x
     y = widget.winfo_y() - widget._drag_start_y + event.y
 
     # todo these methods snap based on the widget's origin at top left, not the center
-    if(abs(widget.winfo_x() - widget._drag_start_x + event.x - int(app.winfo_width()) / 2) < app.winfo_width()/20 and not(keyboard.is_pressed("ctrl"))): # snapping x
+    if(abs(widget.winfo_x() + widget_half_width - widget._drag_start_x + event.x - int(app.winfo_width()) / 2) < app.winfo_width()/20 and not(keyboard.is_pressed("ctrl"))): # snapping x
         x = (app.winfo_width() - widget.winfo_width()) / 2
     
-    if(abs(widget.winfo_y() - widget._drag_start_y + event.y - int(app.winfo_height()) / 2) < app.winfo_height()/20 and not(keyboard.is_pressed("ctrl"))):   # snapping y
+    if(abs(widget.winfo_y() + widget_half_height - widget._drag_start_y + event.y - int(app.winfo_height()) / 2) < app.winfo_height()/20 and not(keyboard.is_pressed("ctrl"))):   # snapping y
         y = (app.winfo_height() - widget.winfo_height()) / 2
 
     widget.place(x=x, y=y)
@@ -97,7 +100,7 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
     global app
     if(app == None or app.winfo_exists() == False):
         app = create_app_window()
-        draw_widgets
+        draw_widgets(app)
     if(entry_width.get() + entry_height.get() != ""):
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
@@ -128,13 +131,14 @@ def update_active_widgets():
             make_draggable(widget_instance)
     draw_widgets()
 
-def create_widget(widget_type,**kwargs):
+def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwargs):
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
+        location = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
         created_widget = {"widget":widget_class(app, **kwargs),
-                          "location": ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2),
+                          "location": (location),
                           "widget_name": str(widget_type),  # todo check why we need this
                           "widget_type": str(widget_class),
                           "kwargs": kwargs,
@@ -176,7 +180,7 @@ def save_logic():
 
 def duplicate_current_widget():
     global current_widget
-    create_widget(current_widget.get("widget_name"), **current_widget.get("kwargs"))
+    create_widget(current_widget.get("widget_name"), True, current_widget,**current_widget.get("kwargs"))
 
 def edit_widget_attributes(widget):
     try:
@@ -208,6 +212,12 @@ def set_preferences(dictionary):
 def export_preferences_editor():
     export = ExportPreferenceHandler(editor_window, pref_dict=export_preferences)
     export.set_set_preferences_cb(lambda: set_preferences(export.get_preferences_dict()))  # the button needs a reference to the function to update the export preferences
+
+def save_project():
+    pass
+
+def open_project():
+    pass
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")

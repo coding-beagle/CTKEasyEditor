@@ -8,7 +8,7 @@ Todo:
 
 Bugs:
 
--
+- Duplicate on elements with images, 'image_path', 'image_size_x', 'image_size_y' are being unpacked
 
 Completed:
 

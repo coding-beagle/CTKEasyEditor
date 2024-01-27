@@ -30,6 +30,8 @@ class ExportPreferenceHandler(ctk.CTkFrame):
             if(type(value) == bool):
                 switch = ctk.CTkSwitch(self.frame_export_settings, text="", command=lambda k=key: self.set_value(k, bool(switch.get())))
                 switch.place(x=230, y=y_val)
+                if(value == True):
+                    switch.select()
             if(type(value) == str):
                 textVar = tk.StringVar(value=str(value))
                 entry = ctk.CTkEntry(self.frame_export_settings, textvariable=textVar, width=50)
