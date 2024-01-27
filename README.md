@@ -1,6 +1,11 @@
 # CTKEasyEditor
 
-An easy GUI editor for CustomTKinter in Python
+An easy GUI editor for CustomTkinter in Python - think of it as a boilerplate generation tool for your CustomTkinter projects.
+
+I've found the most time consuming part of my app development using tkinter comes from repeatedly running and closing apps to check whether or not ui elements are positioned properly. This tool aims to fix this.
+
+Thanks to Tom Schimansky for their CustomTkinter development. Find the original page for CustomTkinter here: https://customtkinter.tomschimansky.com/
+The original documentation on CustomTkinter is excellent, and I recommend it for anyone starting off and struggling with the usage of this tool.
 
 **Note** this is still a work in progress:
 
@@ -31,6 +36,6 @@ Right now it seems to work okay, and the current implementation includes:
 To be implemented soon:
 
 - Some basic theme management
-- Improve user-friendliness, e.g. Undos, Save Projects, Etc
+- Improve user-friendliness, e.g. Undos, Save Projects, Better Snapping
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
