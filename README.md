@@ -64,6 +64,4 @@ To be implemented soon:
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
 
-```
-
-```
+I will add an installer and freeze this into a .exe when I get the tool up to a state when I am happy.
