@@ -30,14 +30,17 @@ $ python -m venv venv
 $ venv/scripts/activate.ps1
 ```
 
+Install the required packages:
+
 ```
 $ pip install -r requirements.txt
 ```
 
-navigate to scripts and run main.py
+Navigate to scripts and run main.py
+
+```
 $ cd scripts
 $ python main.py
-
 ```
 
 Usage:
@@ -60,4 +63,7 @@ To be implemented soon:
 - Improve user-friendliness, e.g. Undos, Save Projects, Better Snapping
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
+
+```
+
 ```
