@@ -15,8 +15,29 @@ To install and run (assuming you have git and pip):
 
 ```
 $ git clone https://github.com/coding-beagle/ctkeasyeditor.git
+```
+
+Navigate to scripts, e.g.
+
+```
+$ cd ctkeasyeditor
+```
+
+Recommended: start a new python virtual environment in this directory:
+
+```
+$ python -m venv venv
+$ venv/scripts/activate.ps1
+```
+
+```
 $ pip install -r requirements.txt
+```
+
+navigate to scripts and run main.py
+$ cd scripts
 $ python main.py
+
 ```
 
 Usage:
@@ -39,3 +60,4 @@ To be implemented soon:
 - Improve user-friendliness, e.g. Undos, Save Projects, Better Snapping
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
+```
