@@ -6,13 +6,17 @@ An easy GUI editor for CustomTKinter in Python
 
 ![Alt text](/screenshots/ss1.png "Example Screenshot")
 
-To install and run:
+To install and run (assuming you have git and pip):
 
 ```
 $ git clone https://github.com/coding-beagle/ctkeasyeditor.git
 $ pip install -r requirements.txt
 $ python main.py
 ```
+
+Usage:
+
+![Alt text](/screenshots/usage1.png "Usage Screenshot")
 
 Currently this is just the skeleton and I am experimenting with the design of different elements.
 Right now it seems to work okay, and the current implementation includes:
@@ -21,7 +25,7 @@ Right now it seems to work okay, and the current implementation includes:
 - Easy Active Widgets manager
 - Drag, and (limited) snapping capability on added widgets
 - The groundwork for adding all of the editing functionality (only some widgets implemented)
-- A very barebones export (only export as procedural file is implemented)
+- Export to OOP and Procedural (OOP by default)
 - Preference Handler (i.e. names of modules, root element, etc)
 
 To be implemented soon:
