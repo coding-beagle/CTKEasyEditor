@@ -52,15 +52,16 @@ Right now it seems to work okay, and the current implementation includes:
 
 - Easy Application Window Settings Management
 - Easy Active Widgets manager
-- Drag, and (limited) snapping capability on added widgets
+- Dragging and snapping of widgets in relation to other widgets and center lines (can be adjusted based on hotkeys)
 - Widget Editing (without theme management yet)
-- Export to OOP and Procedural (OOP by default)
+- Export to OOP and Procedural files (OOP by default)
 - Preference Handler (i.e. names of modules, root element, etc)
 
 To be implemented soon:
 
 - Some basic theme management
-- Improve user-friendliness, e.g. Undos, Save Projects, Improved Snapping Functionality
+- Improve user-friendliness, e.g. Undos, Save Projects
+- Reordering of active widgets
 
 Hotkeys & Shortcuts:
 
