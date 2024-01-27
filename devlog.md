@@ -4,15 +4,17 @@ Todo:
 
 - Add user friendliness features, i.e. being able to rearrange element hierarchy
 - Theme editor / theme selector implementation
-- Export as OOP
 
 Bugs:
 
-- Duplicate on elements with images, 'image_path', 'image_size_x', 'image_size_y' are being unpacked
+- Duplicate on widgets with images, 'image_path', 'image_size_x', 'image_size_y' are being unpacked
+- Duplicate on widgets with different font sizes causes other properties to not be inherited (likely as a result of the font size handling in settingseditor.py)
 
 Completed:
 
 - Added preference window with dynamic element adjusting
+- OOP export implemented
+- Added snapping to other widgets (needs to be fine tuned)
 
 **26-01-2024**
 

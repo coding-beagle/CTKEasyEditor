@@ -34,8 +34,8 @@ class ExportPreferenceHandler(ctk.CTkFrame):
                     switch.select()
             if(type(value) == str):
                 textVar = tk.StringVar(value=str(value))
-                entry = ctk.CTkEntry(self.frame_export_settings, textvariable=textVar, width=50)
-                entry.place(x=220, y=y_val)
+                entry = ctk.CTkEntry(self.frame_export_settings, textvariable=textVar, width=70)
+                entry.place(x=200, y=y_val)
                 textVar.trace_add('write', callback=lambda name, index, mode, k=key, t=textVar: self.set_value(k, t.get()))
     
     def set_value(self, key_to_set, value_to_set):

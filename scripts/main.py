@@ -11,11 +11,14 @@ from boilerplate import *
 from settingseditor import *
 from CTkFileSelector import *
 from preferenceshandler import *
+from CTkImage import *
+from CTkError import *
 
 widget_types = {
     "Add Widgets Here": None,
     "Button": ctk.CTkButton,
     "Label": ctk.CTkLabel,
+    "Image": CTkImageFrame,
     "Text Box": ctk.CTkTextbox,
     "Check Box": ctk.CTkCheckBox,
     "Combo Box": ctk.CTkComboBox,
@@ -24,7 +27,7 @@ widget_types = {
     "Option Menu": ctk.CTkOptionMenu,
     "Progress Bar": ctk.CTkProgressBar,
     "Radio": ctk.CTkRadioButton,
-    "Scrollable Frame": ctk.CTkScrollableFrame,
+    # "Scrollable Frame": ctk.CTkScrollableFrame, # Drag doesnt work for this
     "Scroll Bar": ctk.CTkScrollbar,
     # "Segment Button": ctk.CTkSegmentedButton, Drag is broken for this
     "Slider": ctk.CTkSlider,
@@ -34,10 +37,11 @@ widget_types = {
 
 export_preferences = {
     "Export as OOP?": True,
+    "File Name:": "generated_file",
     "CustomTkinter Module Name:": "ctk",
     "Tkinter Module Name:": "tk",
     "Root Name:": "root",
-    "Class Name (OOP Only):": "Root"
+    "Class Name (OOP Only):": "Root",
 }
 
 def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object and finds its corresponding entry in the active_widgets dictionary
@@ -54,6 +58,29 @@ def on_drag_start(event):
     widget._drag_start_x = event.x
     widget._drag_start_y = event.y
 
+# as long as i hide this function in my terminal everything is okay
+# its responsibility is to return the x point of either the center line or a widget's center
+# if it's x position is different by 20 pixels, same with y
+# it achieves that through some black magic codde
+def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y): 
+    for active_widget in active_widgets:
+        if(widget == active_widget.get("widget")): continue
+        else:
+            active_widget_x_midpoint, active_widget_y_midpoint = active_widget.get("location")
+            active_widget_x_midpoint += active_widget.get("widget").winfo_width() / 2
+            if(test_x):
+                if(abs(widget_x_mid - active_widget_x_midpoint)) < 10:
+                    return active_widget_x_midpoint - active_widget.get("widget").winfo_width()/2
+            else:
+                if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
+                    return active_widget_y_midpoint
+    if(test_x): # testing for app center line
+        if(abs(widget_x_mid - app.winfo_width()/2) < 20 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
+        else: return False
+    else:
+        if(abs(widget_y_mid - app.winfo_height()/2 - widget_half_y) < 20 and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
+        else: return False
+
 def on_drag_motion(event):
     widget = event.widget.master
     widget_half_height = widget.cget("height") / 2
@@ -61,12 +88,14 @@ def on_drag_motion(event):
     x = widget.winfo_x() - widget._drag_start_x + event.x
     y = widget.winfo_y() - widget._drag_start_y + event.y
 
-    # todo these methods snap based on the widget's origin at top left, not the center
-    if(abs(widget.winfo_x() + widget_half_width - widget._drag_start_x + event.x - int(app.winfo_width()) / 2) < app.winfo_width()/20 and not(keyboard.is_pressed("ctrl"))): # snapping x
-        x = (app.winfo_width() - widget.winfo_width()) / 2
+    widget_x_midpoint = widget.winfo_x() + widget_half_width - widget._drag_start_x + event.x
+    widget_y_midpoint = widget.winfo_y() + widget_half_height - widget._drag_start_y + event.y
+
+    if(check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, True, widget_half_width,widget_half_height) and not(keyboard.is_pressed("ctrl"))): # snapping x
+        x = check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, True, widget_half_width,widget_half_height)
     
-    if(abs(widget.winfo_y() + widget_half_height - widget._drag_start_y + event.y - int(app.winfo_height()) / 2) < app.winfo_height()/20 and not(keyboard.is_pressed("ctrl"))):   # snapping y
-        y = (app.winfo_height() - widget.winfo_height()) / 2
+    if(check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, False, widget_half_width,widget_half_height) and not(keyboard.is_pressed("ctrl"))):   # snapping y
+        y = check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, False, widget_half_width,widget_half_height)
 
     widget.place(x=x, y=y)
     for active_widget in active_widgets:
@@ -128,6 +157,7 @@ def update_active_widgets():
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
             frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w))
             widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance: do_popup(event, widget=w.get('widget'), frame=RightClickMenu))
+            widget_instance.get('widget').bind("<Double-Button-1>", lambda event, w=widget_instance: open_editor_window(w))
             make_draggable(widget_instance)
     draw_widgets()
 
@@ -136,9 +166,12 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwarg
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
-        location = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
+        location_x, location_y = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
+        if(duplicate):
+            location_x += 10
+            location_y += 10
         created_widget = {"widget":widget_class(app, **kwargs),
-                          "location": (location),
+                          "location": (location_x, location_y),
                           "widget_name": str(widget_type),  # todo check why we need this
                           "widget_type": str(widget_class),
                           "kwargs": kwargs,
@@ -155,16 +188,20 @@ def draw_widgets():
         widget.get('widget').place(x=x,y=y)
 
 def generate_file(path, export_preferences):
-    with open(f"{path}/generated_file.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
+    with open(f"{path}/{export_preferences.get('File Name')}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
         boiler_handler = BoilerPlateHandler()
         boiler_handler.set_preferences(export_preferences)
-        f.write(boiler_handler.imports())
         app_height = entry_height.get()
         app_width = entry_width.get()
         if(app_height != "" and app_width != ""):
+            f.write(boiler_handler.imports())
             f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
         else:
-            raise ValueError("Bad Dimensions For App!") # todo implement top level error windows for this
+            CTkError(editor_window,error_message="App Dimensions Cannot Be Empty!", button_1_text="Okay")
+            try:
+                os.remove(f"{path}/{export_preferences.get('File Name:')}.py")
+            except FileNotFoundError:
+                pass
         
         for widget in active_widgets:
             f.write(str(boiler_handler.widget_code(widget, path)))

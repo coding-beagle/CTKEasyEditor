@@ -7,20 +7,21 @@ class AttributeEditorWindow(ctk.CTkFrame):
     attributes = {
     "Button": ["size_adjustments", "image_adjustments","text_adjustments"],
     "Label": ["size_adjustments", "image_adjustments","text_adjustments"],
-    "Text Box": ["size_adjustments", "text_adjustments"], # uncomplete
+    "Text Box": ["size_adjustments", "textbox"], # uncomplete
     "Check Box": ["size_adjustments", "text_adjustments", "checkbox"],
     "Combo Box": ["size_adjustments"],
     "Entry": ["size_adjustments", "placeholder_text"],
     "Frame": ["size_adjustments"],
     "Option Menu": ["size_adjustments"],
     "Progress Bar": ["size_adjustments"],
-    "Radio": ["size_adjustments"],
-    # "Scrollable Frame": ctk.CTkScrollableFrame,
-    # "Scroll Bar": ctk.CTkScrollbar,
+    "Radio": ["size_adjustments", "text_adjustments"],
+    # "Scrollable Frame": ["size_adjustments", "scroll_dir"],
+    "Scroll Bar": ["size_adjustments", "scroll_dir"],
     # "Segment Button": ctk.CTkSegmentedButton,
-    # "Slider": ctk.CTkSlider,
-    # "Switch": ctk.CTkSwitch,
+    "Slider": ["size_adjustments", "scroll_dir"],
+    "Switch": ["size_adjustments", "text_adjustments", "switch_adjustments"],
     # "Tab View": ctk.CTkTabview
+    "Image": ["image_adjustments"]
     }
 
     def __init__(self,*args,widget_to_edit,apply_settings_cb,**kwargs):
@@ -46,6 +47,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.button_apply = ctk.CTkButton(self.toplevel, text='Apply Settings', height=30, width=50, corner_radius=10, command=self.update_attributes)
         self.button_apply.place(x=190, y=10)
         
+        # todo rework this to have the same system as preferences handler.py?
         if("size_adjustments" in self.attributes_to_edit):
             self.current_y = self.size_y
             self.size_y += 125
@@ -98,11 +100,40 @@ class AttributeEditorWindow(ctk.CTkFrame):
 
             self.label_font_size = ctk.CTkLabel(self.frame_text_adjustments, text="Font Size")
             self.label_font_size.place(x=10, y=30)
-            self.entry_font_size = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="font size", width=70, height=10)
+            self.entry_font_size = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="size", width=50, height=10)
             self.entry_font_size.place(x=205, y=33)
+            self.label_font_size_px = ctk.CTkLabel(self.frame_text_adjustments, text="px")
+            self.label_font_size_px.place(x=260, y=30)
 
             self.property_entries["text"] = {"entry": self.entry_text, "type": str}
             self.property_entries["font"] = {"entry": self.entry_font_size, "type": tuple}
+
+        if("textbox" in self.attributes_to_edit):
+            self.current_y = self.size_y       # these windows always get added at the bottom
+            self.size_y += 95
+            self.frame_textbox_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 85)
+            self.frame_textbox_adjustments.place(x=10, y=self.current_y)
+
+            self.label_border_width = ctk.CTkLabel(self.frame_textbox_adjustments, text="Border Spacing")
+            self.label_border_width.place(x=10, y=5)
+            self.entry_border_width = ctk.CTkEntry(self.frame_textbox_adjustments, placeholder_text="spacing", width=50, height=10)
+            self.entry_border_width.place(x=205, y=8)
+            self.entry_border_width_px = ctk.CTkLabel(self.frame_textbox_adjustments, text="px")
+            self.entry_border_width_px.place(x=260, y=8)
+
+            self.label_scrollbars = ctk.CTkLabel(self.frame_textbox_adjustments, text="Activate Scroll Bars")
+            self.label_scrollbars.place(x=10, y=30)
+            self.switch_scrollbars = ctk.CTkSwitch(self.frame_textbox_adjustments, text='')
+            self.switch_scrollbars.place(x=240, y=30)
+            
+            self.label_wrapping = ctk.CTkLabel(self.frame_textbox_adjustments, text="Word Wrapping")
+            self.label_wrapping.place(x=10, y=55)
+            self.menu_wrapping = ctk.CTkOptionMenu(self.frame_textbox_adjustments, values=["char", "word", "none"], width=60, height=20)
+            self.menu_wrapping.place(x=210, y=55)
+
+            self.property_entries["border_spacing"] = {"entry": self.entry_border_width, "type": int}
+            self.property_entries["activate_scrollbars"] = {"entry": self.switch_scrollbars, "type": bool}
+            self.property_entries["wrap"] = {"entry": self.menu_wrapping, "type": str}
         
         if("image_adjustments" in self.attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
@@ -116,16 +147,16 @@ class AttributeEditorWindow(ctk.CTkFrame):
 
             self.label_image_size_x = ctk.CTkLabel(self.frame_image_adjustments, text="Image Width")
             self.label_image_size_x.place(x=10, y=30)
-            self.entry_image_size_x = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="width", width=70, height=10)
+            self.entry_image_size_x = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="width", width=50, height=10)
             self.entry_image_size_x.place(x=205, y=33)
-            self.label_image_size_x_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
+            self.label_image_size_x_px = ctk.CTkLabel(self.frame_image_adjustments, text="px")
             self.label_image_size_x_px.place(x=260, y=30)
 
             self.label_image_size_y = ctk.CTkLabel(self.frame_image_adjustments, text="Image Height")
             self.label_image_size_y.place(x=10, y=55)
-            self.entry_image_size_y = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="height", width=70, height=10)
+            self.entry_image_size_y = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="height", width=50, height=10)
             self.entry_image_size_y.place(x=205, y=58)
-            self.label_image_size_y_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
+            self.label_image_size_y_px = ctk.CTkLabel(self.frame_image_adjustments, text="px")
             self.label_image_size_y_px.place(x=260, y=55)
 
             self.property_entries["image_path"] = {"entry": self.image_sel.get_entry_element, "type": str}
@@ -155,6 +186,29 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["checkbox_width"] = {"entry": self.entry_checkbox_width, "type": int}
             self.property_entries["checkbox_height"] = {"entry": self.entry_checkbox_height, "type": int}
 
+        if("switch_adjustments" in self.attributes_to_edit):
+            self.current_y = self.size_y       # these windows always get added at the bottom
+            self.size_y += 70
+            self.frame_switch_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
+            self.frame_switch_adjustments.place(x=10, y=self.current_y)
+
+            self.label_switch_width = ctk.CTkLabel(self.frame_switch_adjustments, text="Checkbox Width")
+            self.label_switch_width.place(x=10, y=5)
+            self.entry_switch_width = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="width", width=70, height=10)
+            self.entry_switch_width.place(x=205, y=8)
+            self.label_switch_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
+            self.label_switch_width_px.place(x=260, y=5)
+
+            self.label_switch_height = ctk.CTkLabel(self.frame_switch_adjustments, text="Checkbox Height")
+            self.label_switch_height.place(x=10, y=30)
+            self.entry_switch_height = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="height", width=70, height=10)
+            self.entry_switch_height.place(x=205, y=33)
+            self.label_switch_height = ctk.CTkLabel(self.frame_size_adjustments, text="px")
+            self.label_switch_height.place(x=260, y=30)
+
+            self.property_entries["switch_width"] = {"entry": self.entry_switch_width, "type": int}
+            self.property_entries["switch_height"] = {"entry": self.entry_switch_height, "type": int}
+
         if("placeholder_text" in self.attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 70
@@ -174,6 +228,19 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["placeholder_text"] = {"entry": self.entry_placeholder_text, "type": str}
             self.property_entries["show"] = {"entry": self.checkbox_hidetext, "type": str}
 
+        if("scroll_dir" in self.attributes_to_edit):
+            self.current_y = self.size_y       # these windows always get added at the bottom
+            self.size_y += 40
+            self.frame_scroll_direction = ctk.CTkFrame(self.toplevel, width=280, height = 30)
+            self.frame_scroll_direction.place(x=10, y=self.current_y)
+
+            self.label_scroll_dir = ctk.CTkLabel(self.frame_scroll_direction, text="Scroll Direction")
+            self.label_scroll_dir.place(x=10, y=5)
+            self.menu_scroll_dir = ctk.CTkOptionMenu(self.frame_scroll_direction, values=["vertical", "horizontal"], width=80, height=20)
+            self.menu_scroll_dir.place(x=190, y=5)
+            
+            self.property_entries["orientation"] = {"entry": self.menu_scroll_dir, "type": str}      # for some reason this doesn't change on demand, only on duplicating widget
+
         editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
         _, editor_size_y = editor_size.split("x")
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
@@ -181,22 +248,21 @@ class AttributeEditorWindow(ctk.CTkFrame):
     def update_attributes(self):
         kwargs = {}
         for prop, info in self.property_entries.items():
-            try:
-                if(prop == "image_path"):   # rework this?
-                    value = self.image_sel.get_path()
-                elif(prop == "font"):
-                    value = ("roboto", info["entry"].get().strip())
-                else:
-                    value = info["entry"].get().strip()
-                if info["type"] == int and value.isdigit():
-                    kwargs[prop] = int(value)
-                elif info["type"] == str and value or prop=="show":
-                    kwargs[prop] = str(value)
-                elif info["type"] == tuple and value[0] and value[1]:
-                    kwargs[prop] = (str(value[0]), int(value[1]))
-            except AttributeError:
-                continue
-
+            if(prop == "image_path"):   # rework this?
+                value = self.image_sel.get_path()
+            elif(prop == "font"):
+                value = ("roboto", info["entry"].get())
+            else:
+                value = info["entry"].get()
+            if info["type"] == int and value.isdigit():
+                kwargs[prop] = int(value)
+            elif info["type"] == str and value or prop=="show":
+                kwargs[prop] = str(value)
+            elif info["type"] == bool:
+                kwargs[prop] = bool(value)
+            elif info["type"] == tuple and value[0] and value[1]:
+                kwargs[prop] = (str(value[0]), -int(value[1]))
+        
         # Update widget properties only if there are valid changes
         if kwargs:
             self.widget_being_edited["kwargs"] = kwargs
