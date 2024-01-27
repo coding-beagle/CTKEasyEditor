@@ -22,6 +22,7 @@ Right now it seems to work okay, and the current implementation includes:
 - Drag, and (limited) snapping capability on added widgets
 - The groundwork for adding all of the editing functionality (only some widgets implemented)
 - A very barebones export (only export as procedural file is implemented)
+- Preference Handler (i.e. names of modules, root element, etc)
 
 To be implemented soon:
 

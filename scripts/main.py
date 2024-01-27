@@ -6,11 +6,11 @@ import customtkinter as ctk
 from CTkMenuBar import *
 from icecream import ic
 import keyboard
-from CTkTree import *
 from activewidgethandler import *
 from boilerplate import *
 from settingseditor import *
 from CTkFileSelector import *
+from preferenceshandler import *
 
 widget_types = {
     "Add Widgets Here": None,
@@ -26,11 +26,23 @@ widget_types = {
     "Radio": ctk.CTkRadioButton,
     "Scrollable Frame": ctk.CTkScrollableFrame,
     "Scroll Bar": ctk.CTkScrollbar,
-    # "Segment Button": ctk.CTkSegmentedButton,
+    # "Segment Button": ctk.CTkSegmentedButton, Drag is broken for this
     "Slider": ctk.CTkSlider,
     "Switch": ctk.CTkSwitch,
-    # "Tab View": ctk.CTkTabview
+    # "Tab View": ctk.CTkTabview Drag is broken for this
 }
+
+export_preferences = {
+    "Export as OOP?": True,
+    "CustomTkinter Module Name:": "ctk",
+    "Tkinter Module Name:": "tk",
+    "Root Name:": "root"
+}
+
+def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object and finds its corresponding entry in the active_widgets dictionary
+    for active_widget in active_widgets:
+        if active_widget.get("widget") == widget:
+            return active_widget
 
 def make_draggable(widget):
     widget.get("widget").bind("<Button-1>", on_drag_start)
@@ -63,16 +75,13 @@ def do_popup(event, frame, widget):
         global current_widget
         try: 
             frame.tk_popup(event.x_root, event.y_root)
-            current_widget = widget
+            current_widget = find_widget_in_active_widgets(widget)
         finally: frame.grab_release()
 
 def destroy_current_widget():
     global current_widget
-    current_widget.destroy()
-    for active_widget in active_widgets:
-        if current_widget == active_widget.get('widget'):
-            delete_widget_from_frame(active_widget)
-            break
+    current_widget.get("widget").destroy()
+    delete_widget_from_frame(current_widget)
     
 def create_app_window():
     global app
@@ -96,6 +105,15 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
     if(file_selector.get_path() != ""):
         icopath = ImageTk.PhotoImage(file=file_selector.get_path())
         app.iconphoto(False, icopath)
+    # todo: fix this - Current limitation is that set_default_color_theme applies to the entire window, not the app
+    # and also it doesn't update the app appearance in real time. One way would be to adjust the colours of the drawn
+    # widgets in real time i.e. fg_color = current_theme col, but then that would get sent to boilerplate generator.
+    # ill come back to this when im wiser 
+    # if(combo_theme_selector.get() != ""): 
+    #     theme = combo_theme_selector.get()
+    #     theme = theme.replace(" ", "-")
+    #     theme = theme.lower()
+    #     ctk.set_default_color_theme(theme)
 
 def delete_widget_from_frame(widget):
     widget.get('widget').destroy()
@@ -110,7 +128,7 @@ def update_active_widgets():
             make_draggable(widget_instance)
     draw_widgets()
 
-def create_widget(widget_type, **kwargs):
+def create_widget(widget_type,**kwargs):
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
@@ -123,41 +141,42 @@ def create_widget(widget_type, **kwargs):
                           "widget_id": f"{widget_type} {len(active_widgets)}"}  # todo adjust this to be based on the number of widgets of the same type
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
-        active_widgets.append(created_widget)
-        update_active_widgets()
+    
+    active_widgets.append(created_widget)
+    update_active_widgets()
 
 def draw_widgets():
     for widget in active_widgets:
         x,y = widget.get('location')
         widget.get('widget').place(x=x,y=y)
 
-def generate_file(path):
+def generate_file(path, export_preferences):
     with open(f"{path}/generated_file.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
-        f.write(imports())
+        boiler_handler = BoilerPlateHandler()
+        boiler_handler.set_preferences(export_preferences)
+        f.write(boiler_handler.imports())
         app_height = entry_height.get()
         app_width = entry_width.get()
         if(app_height != "" and app_width != ""):
-            f.write(basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
+            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
         else:
             raise ValueError("Bad Dimensions For App!") # todo implement top level error windows for this
         
         for widget in active_widgets:
-            f.write(str(widget_code(widget, path)))
+            f.write(str(boiler_handler.widget_code(widget, path)))
 
-        f.write(main_loop())
+        f.write(boiler_handler.main_loop())
 
 def save_logic():
+    global export_preferences
     curr_dir = os.getcwd()
     path = filedialog.askdirectory(initialdir=curr_dir)
     if(path != ""):
-        generate_file(path)
+        generate_file(path, export_preferences)
 
 def duplicate_current_widget():
     global current_widget
-    for active_widget in active_widgets:
-        if current_widget == active_widget.get("widget"):
-            create_widget(active_widget.get("widget_name"))
-            break
+    create_widget(current_widget.get("widget_name"), **current_widget.get("kwargs"))
 
 def edit_widget_attributes(widget):
     try:
@@ -178,6 +197,18 @@ def change_widget_id(widget, id):
         else:
             widget["widget_id"] = id
 
+def edit_current_widget():
+    global current_widget
+    open_editor_window(current_widget)
+
+def set_preferences(dictionary):
+    global export_preferences
+    export_preferences = dictionary
+
+def export_preferences_editor():
+    export = ExportPreferenceHandler(editor_window, pref_dict=export_preferences)
+    export.set_set_preferences_cb(lambda: set_preferences(export.get_preferences_dict()))  # the button needs a reference to the function to update the export preferences
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -196,6 +227,9 @@ menubar_button_edit = menu.add_cascade("Edit")
 
 dropdown_file = CustomDropdownMenu(widget=menubar_button_file, corner_radius=0)
 dropdown_file.add_option(option="Export as .py", command=save_logic)
+
+dropdown_file = CustomDropdownMenu(widget=menubar_button_edit, corner_radius=0)
+dropdown_file.add_option(option="Preferences...", command=export_preferences_editor)
 # menubar settings end
 
 # windows settings starts
@@ -226,6 +260,12 @@ label_left_name.place(x=10, y=70)
 file_selector = CTkFileSelector(window_settings_frame, entry_padding=(20, 5), label="Icon")
 file_selector.place(x=10, y=100)
 
+# see function apply_window_settings for why this isn't implemented yet
+# label_theme_selection = ctk.CTkLabel(window_settings_frame, text="Select a theme:")
+# label_theme_selection.place(x=250, y=70)
+# combo_theme_selector = ctk.CTkSegmentedButton(window_settings_frame, values=["Blue", "Dark Blue", "Green"],height=30)
+# combo_theme_selector.place(x=215, y=100)
+
 button_apply_settings = ctk.CTkButton(window_settings_frame, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
 button_apply_settings.place(x=250, y = 10)
 
@@ -248,9 +288,12 @@ frame_widgets.place(x=10,y=230)
 
 current_widget = None
 
+# Right Click Menu Begins
 RightClickMenu = tk.Menu(app, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
 RightClickMenu.add_command(label="Duplicate", command=duplicate_current_widget)
+RightClickMenu.add_command(label="Edit", command=edit_current_widget)
 RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
+# Right Click Menu Ends
 
 app.bind("<1>", lambda event: event.widget.focus_set())
 
