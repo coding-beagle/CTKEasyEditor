@@ -188,7 +188,7 @@ def draw_widgets():
         widget.get('widget').place(x=x,y=y)
 
 def generate_file(path, export_preferences):
-    with open(f"{path}/{export_preferences.get('File Name')}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
+    with open(f"{path}/{export_preferences.get('File Name:')}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
         boiler_handler = BoilerPlateHandler()
         boiler_handler.set_preferences(export_preferences)
         app_height = entry_height.get()
@@ -227,7 +227,7 @@ def edit_widget_attributes(widget):
         if(widget.get("kwargs").get("image_path")):
             image = ctk.CTkImage(dark_image=Image.open(widget.get("kwargs").get("image_path")), size=(widget.get("kwargs").get("image_size_x"), widget.get("kwargs").get("image_size_y")))
             widget.get("widget").configure(image=image)
-
+    
 def open_editor_window(widget):
     AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
 

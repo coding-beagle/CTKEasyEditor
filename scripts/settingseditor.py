@@ -245,6 +245,12 @@ class AttributeEditorWindow(ctk.CTkFrame):
         _, editor_size_y = editor_size.split("x")
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
     
+        self.populate_existing_fields()
+
+    def populate_existing_fields(self):
+        for key, value in self.widget_being_edited.get("kwargs").items():
+            self.property_entries[key]["entry"].insert(0, value)
+
     def update_attributes(self):
         kwargs = {}
         for prop, info in self.property_entries.items():
