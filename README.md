@@ -43,7 +43,7 @@ $ cd scripts
 $ python main.py
 ```
 
-Usage:
+Example Usage:
 
 ![Alt text](/screenshots/usage1.png "Usage Screenshot")
 
