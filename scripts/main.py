@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw
 import customtkinter as ctk
 from CTkMenuBar import *
 from icecream import ic
@@ -35,13 +35,35 @@ widget_types = {
     # "Tab View": ctk.CTkTabview Drag is broken for this
 }
 
+def toggle_grid():
+    global background
+    if(export_preferences.get("Grid Edit Mode:").get("value")):
+        height = int(entry_height.get())
+        width = int(entry_width.get())
+        grid_spacing_x = width / (int(export_preferences.get("Grid Count X:")["value"]) + 1)
+        grid_spacing_y = height / (int(export_preferences.get("Grid Count Y:")["value"]) + 1)
+        im = Image.new(mode = "RGB", size = (width, height), color=(36,36,36))
+        draw = ImageDraw.Draw(im)
+        for x in (range(1, int(export_preferences.get("Grid Count X:")["value"])+ 1)):
+            draw.line([(int((x)*grid_spacing_x),0),(int((x)*grid_spacing_x), height)], (0, 128,128,40), 1)
+        for y in (range(1, int(export_preferences.get("Grid Count Y:")["value"])+1)):
+            draw.line([(0,int((y)*grid_spacing_y)),(width, int((y)*grid_spacing_y))], (0, 128,128, 40), 1)
+        image = ctk.CTkImage(dark_image=im, size=(width,height))
+        background = ctk.CTkLabel(app, image=image, text='', height=height, width=width)
+        background.place(x=0,y=0)
+    else:
+        background.destroy()
+
 export_preferences = {
-    "Export as OOP?": True,
-    "File Name:": "generated_file",
-    "CustomTkinter Module Name:": "ctk",
-    "Tkinter Module Name:": "tk",
-    "Root Name:": "root",
-    "Class Name (OOP Only):": "Root",
+    "Grid Edit Mode:": {"value": False, "cb": toggle_grid},
+    "Grid Count X:": {"value": 10, "cb": None},
+    "Grid Count Y:": {"value": 10, "cb": None},
+    "Export as OOP?": {"value": True, "cb": None},
+    "File Name:": {"value": "generated_file", "cb": None},
+    "CustomTkinter Module Name:": {"value": "ctk", "cb": None},
+    "Tkinter Module Name:": {"value": "tk", "cb": None},
+    "Root Name:": {"value": "root", "cb": None},
+    "Class Name (OOP Only):": {"value": "Root", "cb": None},
 }
 
 def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object and finds its corresponding entry in the active_widgets dictionary
@@ -116,11 +138,10 @@ def destroy_current_widget():
     delete_widget_from_frame(current_widget)
     
 def create_app_window():
-    global app
     app = ctk.CTkToplevel(editor_window)
     editor_size,editor_offset_x, editor_offset_y= editor_window.geometry().split("+")
     editor_size_x, _ = editor_size.split("x")
-    app.geometry(f"500x400+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
+    app.geometry(f"500x500+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
     app.resizable(False, False)
     app.title("App")
     return app
@@ -291,6 +312,7 @@ label_left_entry_width = ctk.CTkLabel(window_settings_frame, text="Width")
 label_left_entry_width.place(x=10, y=10)
 entry_width = ctk.CTkEntry(window_settings_frame, placeholder_text = "Width of Window")
 entry_width.place(x=55, y=10)
+entry_width.insert(0, 500)
 
 entry_height = ctk.CTkEntry(window_settings_frame, placeholder_text= "Height of Window")
 entry_height.place(x=55, y=40)
@@ -298,6 +320,8 @@ label_left_entry_height = ctk.CTkLabel(window_settings_frame, text="Height")
 label_left_entry_height.place(x=10, y=40)
 label_entry_width = ctk.CTkLabel(window_settings_frame, text="px")
 label_entry_width.place(x=200, y=40)
+entry_height.insert(0, 500)
+
 
 entry_name = ctk.CTkEntry(window_settings_frame, placeholder_text= "App Name")
 entry_name.place(x=55, y=70)

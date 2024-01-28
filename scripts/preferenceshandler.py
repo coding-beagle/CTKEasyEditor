@@ -27,19 +27,30 @@ class ExportPreferenceHandler(ctk.CTkFrame):
             label = ctk.CTkLabel(self.frame_export_settings, text=f"{key}")
             y_val = (index * 30)+5
             label.place(x=10, y=y_val)
-            if(type(value) == bool):
-                switch = ctk.CTkSwitch(self.frame_export_settings, text="", command=lambda k=key: self.set_value(k, bool(switch.get())))
+            if(value.get("cb") is not None): callback = value.get("cb")
+            else: callback = None
+
+            if(type(value["value"]) == bool):
+                switch = ctk.CTkSwitch(self.frame_export_settings, text="")
+                switch.configure(command=lambda k=key, cb = callback, sw=switch: self.set_value(k, bool(sw.get()), cb))
                 switch.place(x=230, y=y_val)
-                if(value == True):
+                if(value["value"] == True):
                     switch.select()
-            if(type(value) == str):
-                textVar = tk.StringVar(value=str(value))
+            if(type(value["value"]) == str):
+                textVar = tk.StringVar(value=str(value["value"]))
                 entry = ctk.CTkEntry(self.frame_export_settings, textvariable=textVar, width=70)
                 entry.place(x=200, y=y_val)
-                textVar.trace_add('write', callback=lambda name, index, mode, k=key, t=textVar: self.set_value(k, t.get()))
+                textVar.trace_add('write', callback=lambda name, index, mode, k=key, t=textVar, cb=callback: self.set_value(k, t.get(), cb))
+            if(type(value["value"]) == int):
+                textVar = tk.StringVar(value=int(value["value"]))
+                entry = ctk.CTkEntry(self.frame_export_settings, textvariable=textVar, width=70)
+                entry.place(x=200, y=y_val)
+                textVar.trace_add('write', callback=lambda name, index, mode, k=key, t=textVar, cb=callback: self.set_value(k, t.get(), cb))
     
-    def set_value(self, key_to_set, value_to_set):
-        self.export_settings[f"{key_to_set}"] = value_to_set
+    def set_value(self, key_to_set, value_to_set, cb):
+        self.export_settings[f"{key_to_set}"]["value"] = value_to_set
+        if(cb is not None):
+            cb()
     
     def set_set_preferences_cb(self, cb):
         self.button_set_preferences.configure(command=cb)
