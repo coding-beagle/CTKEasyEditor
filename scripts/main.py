@@ -35,29 +35,30 @@ widget_types = {
     # "Tab View": ctk.CTkTabview Drag is broken for this
 }
 
-def toggle_grid():
-    global background
-    if(export_preferences.get("Grid Edit Mode:").get("value")):
-        height = int(entry_height.get())
-        width = int(entry_width.get())
-        grid_spacing_x = width / (int(export_preferences.get("Grid Count X:")["value"]) + 1)
-        grid_spacing_y = height / (int(export_preferences.get("Grid Count Y:")["value"]) + 1)
-        im = Image.new(mode = "RGB", size = (width, height), color=(36,36,36))
-        draw = ImageDraw.Draw(im)
-        for x in (range(1, int(export_preferences.get("Grid Count X:")["value"])+ 1)):
-            draw.line([(int((x)*grid_spacing_x),0),(int((x)*grid_spacing_x), height)], (0, 128,128,40), 1)
-        for y in (range(1, int(export_preferences.get("Grid Count Y:")["value"])+1)):
-            draw.line([(0,int((y)*grid_spacing_y)),(width, int((y)*grid_spacing_y))], (0, 128,128, 40), 1)
-        image = ctk.CTkImage(dark_image=im, size=(width,height))
-        background = ctk.CTkLabel(app, image=image, text='', height=height, width=width)
-        background.place(x=0,y=0)
-    else:
-        background.destroy()
+# for a rainy day, also i'm not sure how this will play with the grid manager yet
+# def toggle_grid():
+#     global background
+#     if(export_preferences.get("Grid Edit Mode:").get("value")):
+#         height = int(entry_height.get())
+#         width = int(entry_width.get())
+#         grid_spacing_x = width / (int(export_preferences.get("Grid Count X:")["value"]) + 1)
+#         grid_spacing_y = height / (int(export_preferences.get("Grid Count Y:")["value"]) + 1)
+#         im = Image.new(mode = "RGB", size = (width, height), color=(36,36,36))
+#         draw = ImageDraw.Draw(im)
+#         for x in (range(1, int(export_preferences.get("Grid Count X:")["value"])+ 1)):
+#             draw.line([(int((x)*grid_spacing_x),0),(int((x)*grid_spacing_x), height)], (0, 128,128,40), 1)
+#         for y in (range(1, int(export_preferences.get("Grid Count Y:")["value"])+1)):
+#             draw.line([(0,int((y)*grid_spacing_y)),(width, int((y)*grid_spacing_y))], (0, 128,128, 40), 1)
+#         image = ctk.CTkImage(dark_image=im, size=(width,height))
+#         background = ctk.CTkLabel(app, image=image, text='', height=height, width=width)
+#         background.place(x=0,y=0)
+#     else:
+#         background.destroy()
 
 export_preferences = {
-    "Grid Edit Mode:": {"value": False, "cb": toggle_grid},
-    "Grid Count X:": {"value": 10, "cb": None},
-    "Grid Count Y:": {"value": 10, "cb": None},
+    # "Grid Edit Mode:": {"value": False, "cb": toggle_grid "hotkey": []},
+    # "Grid Count X:": {"value": 10, "cb": None},
+    # "Grid Count Y:": {"value": 10, "cb": None},
     "Export as OOP?": {"value": True, "cb": None},
     "File Name:": {"value": "generated_file", "cb": None},
     "CustomTkinter Module Name:": {"value": "ctk", "cb": None},
@@ -71,9 +72,17 @@ def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object 
         if active_widget.get("widget") == widget:
             return active_widget
 
+# def kill_snap_widget(arg):
+#     global label_snap_lines_horizontal, label_snap_lines_vertical
+#     if(label_snap_lines_vertical):
+#         label_snap_lines_horizontal.forget()
+#     if(label_snap_lines_horizontal):
+#         label_snap_lines_vertical.forget()
+
 def make_draggable(widget):
     widget.get("widget").bind("<Button-1>", on_drag_start)
     widget.get("widget").bind("<B1-Motion>", on_drag_motion)
+    # widget.get("widget").bind("<ButtonRelease-1>", kill_snap_widget)
 
 def on_drag_start(event):
     widget = event.widget.master
@@ -84,7 +93,25 @@ def on_drag_start(event):
 # its responsibility is to return the x point of either the center line or a widget's center
 # if it's x position is different by 20 pixels, same with y
 # it achieves that through some black magic codde
-def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y): 
+def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y):
+    # global label_snap_lines_vertical, label_snap_lines_horizontal
+    # app_height = app.winfo_height()
+    # app_width = app.winfo_width()
+
+    # snap_lines_img_vertical = Image.new(mode = "RGBA", size = (1, 40), color=(0,0,0,128))
+    # draw = ImageDraw.Draw(snap_lines_img_vertical)
+    # draw.line([0, 0, 0, 40], (0,235,255,200), 1)
+
+    # snap_lines_img_horizontal = Image.new(mode = "RGBA", size = (40, 1), color=(0,0,0,128))
+    # draw2 = ImageDraw.Draw(snap_lines_img_horizontal)
+    # draw2.line([0, 0, 40, 0], (0,235,255,200), 1)
+
+    # image_vert = ctk.CTkImage(dark_image=snap_lines_img_vertical, size=(1,40))
+    # image_horizontal = ctk.CTkImage(dark_image=snap_lines_img_vertical, size=(40,1))
+    
+    # label_snap_lines_horizontal = ctk.CTkLabel(widget, width=40, height=1, text='', image=image_horizontal)
+    # label_snap_lines_vertical = ctk.CTkLabel(widget, width=1, height=40, text='', image=image_vert)
+    
     for active_widget in active_widgets:
         if(widget == active_widget.get("widget")): continue
         else:
@@ -96,11 +123,12 @@ def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_
             else:
                 if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
                     return active_widget_y_midpoint
+                
     if(test_x): # testing for app center line
-        if(abs(widget_x_mid - app.winfo_width()/2) < 20 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
+        if(abs(widget_x_mid - app.winfo_width()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
         else: return False
     else:
-        if(abs(widget_y_mid - app.winfo_height()/2 - widget_half_y) < 20 and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
+        if(abs(widget_y_mid - app.winfo_height()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
         else: return False
 
 def on_drag_motion(event):
@@ -209,7 +237,7 @@ def draw_widgets():
         widget.get('widget').place(x=x,y=y)
 
 def generate_file(path, export_preferences):
-    with open(f"{path}/{export_preferences.get('File Name:')}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
+    with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
         boiler_handler = BoilerPlateHandler()
         boiler_handler.set_preferences(export_preferences)
         app_height = entry_height.get()
@@ -220,7 +248,7 @@ def generate_file(path, export_preferences):
         else:
             CTkError(editor_window,error_message="App Dimensions Cannot Be Empty!", button_1_text="Okay")
             try:
-                os.remove(f"{path}/{export_preferences.get('File Name:')}.py")
+                os.remove(f"{path}/{export_preferences.get('File Name:').get('value')}.py")
             except FileNotFoundError:
                 pass
         

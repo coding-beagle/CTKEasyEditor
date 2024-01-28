@@ -4,6 +4,7 @@ Todo:
 
 - Add user friendliness features, i.e. being able to rearrange element hierarchy
 - Theme editor / theme selector implementation
+- r/therewasanattempt to try and add line drawings to show snap
 
 Bugs:
 

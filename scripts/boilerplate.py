@@ -10,11 +10,11 @@ class BoilerPlateHandler():
 
     def set_preferences(self, dict):
         self.preferences = dict
-        self.ctk_module = self.preferences.get('CustomTkinter Module Name:')
-        self.tk_module = self.preferences.get('Tkinter Module Name:')
-        self.root = self.preferences.get('Root Name:')
-        self.export_oop = self.preferences.get("Export as OOP?")
-        self.classname = self.preferences.get("Class Name (OOP Only):")
+        self.ctk_module = self.preferences.get('CustomTkinter Module Name:')['value']
+        self.tk_module = self.preferences.get('Tkinter Module Name:')['value']
+        self.root = self.preferences.get('Root Name:')['value']
+        self.export_oop = self.preferences.get("Export as OOP?")['value']
+        self.classname = self.preferences.get("Class Name (OOP Only):")['value']
 
         if(self.export_oop and self.classname == ""):
             self.classname = f"{self.root[:-1].upper()}{self.root[:1]}"
@@ -44,11 +44,10 @@ class {self.classname}({self.ctk_module}.CTk):
                 except shutil.SameFileError:
                     pass    # file exists in directory where we're trying to write to, so we don't care
                 text += f"""
-## Icon gets set here        
-self.icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
-self.wm_iconbitmap()
-self.iconphoto(True, icon_path)
-"""
+        ## Icon gets set here        
+        self.icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
+        self.wm_iconbitmap()
+        self.iconphoto(True, self.icon_path)"""
             return f"{text}\n"
         else:
             text =f"""
@@ -69,8 +68,7 @@ self.iconphoto(True, icon_path)
 ## Icon gets set here        
 icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
 {self.root}.wm_iconbitmap()
-{self.root}.iconphoto(True, icon_path)
-    """
+{self.root}.iconphoto(True, icon_path)"""
         return text + "\n"
     
 
@@ -112,8 +110,14 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
 
         x,y = widget.get("location")
 
+        widget_type = widget.get("widget_type").split(".")[-1][:-2]
+        ic(widget_type)
+        if(widget_type == 'CTkImageFrame'):
+            widget_type = 'CTkLabel'
+            arguments += ',text=""'
+
         text += f"""
-{"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget.get("widget_type").split(".")[-1][:-2]}({arguments})
+{"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget_type}({arguments})
 {"        self." if self.export_oop else ""}{widget_name}.place(x={x}, y={y})"""
         return text
 
