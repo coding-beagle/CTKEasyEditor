@@ -13,6 +13,7 @@ from CTkFileSelector import *
 from preferenceshandler import *
 from CTkImage import *
 from CTkError import *
+import json
 
 widget_types = {
     "Add Widgets Here": None,
@@ -174,7 +175,7 @@ def create_app_window():
     editor_size_x, _ = editor_size.split("x")
     app.geometry(f"{entry_width.get()}x{entry_height.get()}+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
     app.resizable(False, False)
-    app.title("App")
+    app.title(entry_name.get())
     return app
 
 def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt HAVE TO BE GLOBAl
@@ -245,7 +246,7 @@ def add_bindings(draw=True, updated_menu=None):
     if(draw):
         draw_widgets()
 
-def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],**kwargs):
+def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={},**kwargs):
     theme = combo_theme_selector.get()
     theme = theme.replace(" ", "-")
     theme = theme.lower()
@@ -271,6 +272,11 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
         if(duplicate):
             created_widget["location"] = (location_x+10, location_y+10)
             created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
+            edit_widget_attributes(created_widget)
+        if(from_file):
+            created_widget["location"] = from_file_dict["location"]
+            created_widget["kwargs"] = from_file_dict["kwargs"]   # this is needed because image is part of kwargs for some reason
+            created_widget["widget_id"] = from_file_dict["widget_id"]
             edit_widget_attributes(created_widget)
     
     active_widgets.append(created_widget)
@@ -318,7 +324,6 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
     if(update_widgets and new_canvas):
         add_bindings(draw=False, updated_menu=right_click_menu)
         
-   
 def generate_file(path, export_preferences):
     with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
         boiler_handler = BoilerPlateHandler()
@@ -390,11 +395,64 @@ def export_preferences_editor():
     export = ExportPreferenceHandler(editor_window, pref_dict=export_preferences)
     export.set_set_preferences_cb(lambda: set_preferences(export.get_preferences_dict()))  # the button needs a reference to the function to update the export preferences
 
-def save_project():
-    pass
- 
-def open_project():
-    pass
+def save_as_project(args=None):
+    global save_path
+    curr_dir = os.getcwd()
+    files = [('Json File', '*.json'), ('All Files', '*.*')]
+
+    save_path = (filedialog.asksaveasfile(initialdir=curr_dir, defaultextension=files, filetypes=files, title="Save Project As"))
+    if(save_path is None):
+        return
+    else:
+        save_path = save_path.name
+    if(save_path.split('.')[-1] != "json"):
+        CTkError(editor_window,title="Are you sure?", error_message="Saved type is not a .json. Are you sure what you're doing is worth it?", button_1_text="Yes", size_x=150, size_y=150)
+        return
+    if(save_path != ""):
+        save_project()
+
+def save_project(args=None):
+    if(save_path is None):
+        save_as_project()
+
+    with open(f"{save_path}", "w") as write_file:
+        data_to_save = ["This is some data regarding a custom tkinter application"]
+        data_to_save.append(f"The file has dimensions of ({entry_width.get()}x{entry_height.get()}) and a title of {entry_name.get()}, and has a theme of {combo_theme_selector.get()}")
+        for active_widget in active_widgets:
+            save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
+            data_to_save.append(save)
+        json.dump(data_to_save, write_file, indent=2)
+
+def open_project(args=None):
+    global active_widgets
+    curr_dir = os.getcwd()
+    file_path = filedialog.askopenfile(initialdir=curr_dir, filetypes=[("Json File","*.json")])
+    if(file_path is not None):
+        with open (str(file_path.name), "r") as file:
+            new_data = json.load(file)
+            if(new_data[0] != "This is some data regarding a custom tkinter application"):
+                CTkError(editor_window, error_message="This file is not correct!",button_1_text="Okay")
+                return
+            else:
+                active_widgets = []
+                width, height = new_data[1].split("(")[1].split(")")[0].split('x')      # dealing with window settings data
+                entry_width.delete(0, tk.END)
+                entry_width.insert(0, int(width))
+                entry_height.delete(0, tk.END)
+                entry_height.insert(0, int(height))
+
+                title, theme = new_data[1].split("title of ")[1].split(', and has a theme of ')
+                entry_name.delete(0, tk.END)
+                entry_name.insert(0, title)
+                combo_theme_selector.set(theme)
+
+                apply_window_settings()         # deal with themes
+
+                for item in new_data[2:]: # rest of data is widgets
+                    item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
+                    create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)
+    else:
+        return    
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -413,7 +471,16 @@ menubar_button_file = menu.add_cascade("File")
 menubar_button_edit = menu.add_cascade("Edit")
 
 dropdown_file = CustomDropdownMenu(widget=menubar_button_file, corner_radius=0)
+dropdown_file.add_option(option="Save                           (ctrl + S)", command=save_project)
+editor_window.bind_all("<Control-s>", save_project)
+dropdown_file.add_option(option="Save As...       (ctrl + shift + S)", command=save_as_project)
+editor_window.bind_all("<Control-Shift-S>", save_as_project)
+dropdown_file.add_option(option="Open Project...         (ctrl + O)", command=open_project)
+editor_window.bind_all("<Control-o>", open_project)
+dropdown_file.add_separator()
 dropdown_file.add_option(option="Export as .py", command=save_logic)
+
+save_path = ""
 
 dropdown_file = CustomDropdownMenu(widget=menubar_button_edit, corner_radius=0)
 dropdown_file.add_option(option="Preferences...", command=export_preferences_editor)
@@ -450,7 +517,6 @@ label_left_name.place(x=10, y=70)
 file_selector = CTkFileSelector(frame_window_settings, entry_padding=(20, 5), label="Icon")
 file_selector.place(x=10, y=100)
 
-# see function apply_window_settings for why this isn't implemented yet
 label_theme_selection = ctk.CTkLabel(frame_window_settings, text="Select a theme:")
 label_theme_selection.place(x=250, y=70)
 combo_theme_selector = ctk.CTkSegmentedButton(frame_window_settings, values=["Blue", "Dark Blue", "Green"],height=30)

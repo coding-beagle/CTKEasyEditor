@@ -2,7 +2,6 @@
 
 Todo:
 
-- Add element rearranging
 - Add custom theme support
 
 Bugs encountered:
@@ -18,6 +17,8 @@ Completed:
 - 'Apply Settings' now correctly reloads all of the widgets when the app window is closed (wasn't working before)
 - boilerplate.py indenting issues for image objects
 - Added basic theme management
+- Added element rearranging (this is currently backwards compared to photoshop or other standard, in theory widgets should have higher draw priority the more they are on top)
+- Added project saving
 
 **27-01-2024**
 
