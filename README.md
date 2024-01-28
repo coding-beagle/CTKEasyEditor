@@ -47,7 +47,7 @@ Usage:
 
 ![Alt text](/screenshots/usage1.png "Usage Screenshot")
 
-Currently this is just the skeleton and I am experimenting with the design of different elements.
+This tool is still in development, please report any bugs or issues under the issues tab.
 Right now it seems to work okay, and the current implementation includes:
 
 - Easy Application Window Settings Management
