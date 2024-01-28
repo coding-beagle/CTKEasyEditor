@@ -67,6 +67,7 @@ Hotkeys & Shortcuts:
 
 - CTRL --> Hold while dragging to prevent widget from snapping into place
 - ALT --> Only snap widget to other widgets, not the app center lines
+- Shift --> Only snap to origin lines
 - Double Click --> Opens editor window on that widget
 - Right Click --> Opens context menu on widget (edit, duplicate, delete)
 

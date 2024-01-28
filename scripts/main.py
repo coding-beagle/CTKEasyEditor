@@ -207,12 +207,36 @@ def delete_widget_from_frame(widget):
     frame_widgets.remove_widget(widget.get('widget'))
     active_widgets.remove(widget)
 
+def move_widget_up_in_frame(widget):
+    global active_widgets
+    widget_index = 0
+    for active_widget in active_widgets:
+        if(active_widget.get("widget") == widget.get("widget")):
+            break
+        widget_index += 1
+    if(widget_index != 0):
+        active_widgets[widget_index], active_widgets[widget_index - 1] = active_widgets[widget_index - 1], active_widgets[widget_index]
+    frame_widgets.update_grid(active_widgets)
+    draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
+    
+def move_widget_down_in_frame(widget):
+    global active_widgets
+    widget_index = 0
+    for active_widget in active_widgets:
+        if(active_widget.get("widget") == widget.get("widget")):
+            break
+        widget_index += 1
+    if(widget_index != len(active_widgets)- 1):
+        active_widgets[widget_index], active_widgets[widget_index + 1] = active_widgets[widget_index + 1], active_widgets[widget_index]
+    frame_widgets.update_grid(active_widgets)
+    draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
+    
 def add_bindings(draw=True, updated_menu=None):
     for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
             theme = "blue"
             ctk.set_default_color_theme(theme)
-            frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w))
+            frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w), move_up_cb=lambda w=widget_instance: move_widget_up_in_frame(w), move_down_cb=lambda w=widget_instance: move_widget_down_in_frame(w))
         if(not(widget_instance.get("has_bindings"))):
             widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance.get('widget'): do_popup(event, widget=w, frame=new_right_click_menu(w._nametowidget(w.winfo_parent()))))
             widget_instance.get('widget').bind("<Double-Button-1>", lambda event, w=widget_instance: open_editor_window(w))
@@ -252,14 +276,31 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
     active_widgets.append(created_widget)
     add_bindings()
 
-def new_right_click_menu(master):
+def bring_up_a_layer():
+    global current_widget
+    move_widget_down_in_frame(current_widget)
+
+def bring_down_a_layer():
+    global current_widget
+    move_widget_up_in_frame(current_widget)
+
+def new_right_click_menu(master):    
     RightClickMenu = tk.Menu(master, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
     RightClickMenu.add_command(label="Duplicate", command=duplicate_current_widget)
     RightClickMenu.add_command(label="Edit", command=edit_current_widget)
     RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
+    RightClickMenu.add_command(label="Bring Up One Layer", command=bring_up_a_layer)        # todo these are currently reversed in viewport, e.g. higher in active_widgets == drawn first, whereas it should be the opposite
+    RightClickMenu.add_command(label="Bring Down One Layer", command=bring_down_a_layer)
     return RightClickMenu
 
-def draw_widgets(new_canvas = None, update_widgets = False):
+def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widgets=False):
+    if(new_canvas):
+        right_click_menu=new_right_click_menu(new_canvas)
+
+    if(delete_existing_widgets):
+        for app_widgets in app.winfo_children():
+            app_widgets.destroy()
+    
     for widget in active_widgets:
         if(new_canvas):
             kwargs = widget.get('kwargs')
@@ -269,12 +310,12 @@ def draw_widgets(new_canvas = None, update_widgets = False):
             widget.get('widget').unbind("<Button-1>")
             widget.get('widget').unbind("<B1-Motion>")
             widget.get('widget').unbind("<Double-Button-1>")
-            
-            right_click_menu=new_right_click_menu(new_canvas)
-            
+                        
         x,y = widget.get('location')
         widget.get('widget').place(x=x,y=y)
     if(update_widgets and not new_canvas):
+        add_bindings(draw=False)
+    if(update_widgets and new_canvas):
         add_bindings(draw=False, updated_menu=right_click_menu)
         
    

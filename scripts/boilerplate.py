@@ -118,7 +118,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
 
         text += f"""
 {"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget_type}({arguments})
-{"        self." if self.export_oop else ""}{widget_name}.place(x={x}, y={y})"""
+{"        self." if self.export_oop else ""}{widget_name}.place(x={x}, y={y})\n"""
         return text
 
     def main_loop(self):

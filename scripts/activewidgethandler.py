@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from icecream import ic
+from collections import OrderedDict
 
 class WidgetName(ctk.CTkFrame):
     def __init__(self, *args,
@@ -10,6 +11,8 @@ class WidgetName(ctk.CTkFrame):
                  edit_button_cb,
                  delete_button_cb,
                  name_change_cb,
+                 move_up_cb,
+                 move_down_cb,
                  **kwargs):
         super().__init__(*args, width=width, height=height, **kwargs)
 
@@ -24,22 +27,31 @@ class WidgetName(ctk.CTkFrame):
 
         self.change_name = name_change_cb
 
+        self.move_up = move_up_cb
+        self.move_down = move_down_cb
+
         self.entry = ctk.CTkEntry(self)
         self.text = tk.StringVar(self.entry, self.widget_ref.get("widget_id"))
         self.old_name = self.widget_ref.get("widget_id")
 
         self.entry.configure(textvariable=self.text)
         self.entry.configure(state="disabled")
-        self.entry.grid(column=0, row=0, sticky='w', columnspan=1, padx=5)
+        self.entry.grid(column=0, row=0, sticky='w', columnspan=1, padx=5, rowspan=2)
         self.entry.bind('<Button-1>', self.edit_text)
         self.entry.bind('<Return>', self.stop_edit_text)
         self.entry.bind('<FocusOut>', self.stop_edit_text)
 
-        self.edit_button = ctk.CTkButton(self, font=('roboto', -15),text="⛭", command=edit_button_cb, width=30, height=30)
-        self.edit_button.grid(column=2, row=0, padx=2,pady=2, sticky='e')
+        self.edit_button = ctk.CTkButton(self, font=('roboto', -20),text="⛭", command=edit_button_cb, width=40, height=40)
+        self.edit_button.grid(column=2, row=0, padx=2,pady=2, sticky='e', rowspan=2)
         
-        self.remove_button = ctk.CTkButton(self, font=(('roboto', -20)), text="×", command=delete_button_cb, width=30, height=30)
-        self.remove_button.grid(column=3, row=0, padx=2,pady=2, sticky='e')
+        self.remove_button = ctk.CTkButton(self, font=(('roboto', -25)), text="×", command=delete_button_cb, width=40, height=40)
+        self.remove_button.grid(column=3, row=0, padx=2,pady=2, sticky='e', rowspan=2)
+
+        self.up_button = ctk.CTkButton(self, font=('roboto', -10), text='⮝', width=20,height=10, command=self.move_up)
+        self.up_button.grid(column=1, row=0, sticky='ne', pady=(2,0), padx=(0,1))
+
+        self.down_button = ctk.CTkButton(self, font=('roboto', -10), text='⮟', width=20,height=10, command=self.move_down)
+        self.down_button.grid(column=1, row=1, sticky='se', pady=(0,2), padx=(0,1))
 
     def edit_text(self, event):
         self.entry.configure(state="normal")
@@ -80,15 +92,18 @@ class WidgetHandler(ctk.CTkScrollableFrame):
         self.active_row_widgets = []
         self.columnconfigure(0, weight=10)
 
-    def add_widget(self, widget, edit_cb, delete_cb, name_change_cb):
-        self.widget_data_dict = {"widget": widget,  "edit_cb": edit_cb, "delete_cb": delete_cb, "name_change_cb": name_change_cb}
+    def add_widget(self, widget, edit_cb, delete_cb, name_change_cb, move_up_cb, move_down_cb):
+        self.widget_data_dict = {"widget": widget,  "edit_cb": edit_cb, "delete_cb": delete_cb, "name_change_cb": name_change_cb, "move_up": move_up_cb, "move_down": move_down_cb}
         self.active_widgets.append(self.widget_data_dict)
         self.update_grid()
 
-    def update_grid(self):
+    def update_grid(self, active_widgets=[]):
         self.clear_grid()
+        if(active_widgets):
+            order = [item['widget'] for item in active_widgets]
+            self.active_widgets.sort(key=lambda x: order.index(x['widget']['widget']))
         for index,widget in enumerate(self.active_widgets):
-            self.name = WidgetName(self, height=30,width=300,widget=widget.get("widget"), edit_button_cb=widget.get('edit_cb'), delete_button_cb=widget.get('delete_cb'), name_change_cb=widget.get("name_change_cb"))
+            self.name = WidgetName(self, height=30,width=300,widget=widget.get("widget"), edit_button_cb=widget.get('edit_cb'), delete_button_cb=widget.get('delete_cb'), name_change_cb=widget.get("name_change_cb"), move_up_cb=widget.get("move_up"),move_down_cb=widget.get("move_down"))
             self.name.grid(row=index, stick='ew')
             self.active_row_widgets.append(self.name)
     
