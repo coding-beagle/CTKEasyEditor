@@ -3,12 +3,14 @@
 Todo:
 
 - Add custom theme support
+- Active Widget Handler needs some optimisations
 
 Bugs encountered:
 
 - **(Fixed)** Lots of error messages but the app still seems to work fine
 - **(Fixed)** The error messages were because the app was not working fine.
 - **(Fixed)** Error messages were being caused by app window being duplicated in create_app_window() function
+- Icon not working now
 
 Completed:
 

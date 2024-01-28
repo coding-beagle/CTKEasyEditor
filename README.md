@@ -56,20 +56,21 @@ Right now it seems to work okay, and the current implementation includes:
 - Widget Editing (without theme management yet)
 - Export to OOP and Procedural files (OOP by default)
 - Preference Handler (i.e. names of modules, root element, etc)
+- Saving and opening of projects
 
 To be implemented soon:
 
-- Some basic theme management
-- Improve user-friendliness, e.g. Undos, Save Projects
-- Reordering of active widgets
+- Custom Theme Support
+- Performance Optimisations
 
 Hotkeys & Shortcuts:
 
 - CTRL --> Hold while dragging to prevent widget from snapping into place
 - ALT --> Only snap widget to other widgets, not the app center lines
-- Shift --> Only snap to origin lines
 - Double Click --> Opens editor window on that widget
 - Right Click --> Opens context menu on widget (edit, duplicate, delete)
+
+- The standard save, save as and open hotkeys, i.e. ctrl+s, ctrl+shift+s, ctrl+o, etc
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
 

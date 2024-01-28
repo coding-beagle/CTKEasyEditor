@@ -73,6 +73,12 @@ def find_widget_in_active_widgets(widget):  # this takes in a CTk Widget Object 
         if active_widget.get("widget") == widget:
             return active_widget
 
+def set_theme_to_user_theme():
+    theme = combo_theme_selector.get()
+    theme = theme.replace(" ", "-")
+    theme = theme.lower()
+    ctk.set_default_color_theme(theme)
+
 # def kill_snap_widget(arg):
 #     global label_snap_lines_horizontal, label_snap_lines_vertical
 #     if(label_snap_lines_vertical):
@@ -157,14 +163,18 @@ def on_drag_motion(event):
 def do_popup(event, frame, widget):
         global current_widget
         try: 
+            ctk.set_default_color_theme('blue')
             frame.tk_popup(event.x_root, event.y_root)
             current_widget = find_widget_in_active_widgets(widget)
+            set_theme_to_user_theme()
         finally: frame.grab_release()
 
 def destroy_current_widget():
     global current_widget
     current_widget.get("widget").destroy()
+    ctk.set_default_color_theme('blue')
     delete_widget_from_frame(current_widget)
+    set_theme_to_user_theme()
     
 def create_app_window():
     global app
@@ -176,39 +186,40 @@ def create_app_window():
     app.geometry(f"{entry_width.get()}x{entry_height.get()}+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
     app.resizable(False, False)
     app.title(entry_name.get())
+
+    if(file_selector.get_path() != ""):
+        icopath = ImageTk.PhotoImage(file=file_selector.get_path())
+        app.iconphoto(True, icopath)
+
     return app
 
 def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt HAVE TO BE GLOBAl
     global app
     if(app == None or app.winfo_exists() == False):
         app = create_app_window()
-        # draw_widgets(app, True)
+    if(combo_theme_selector.get() != ""): 
+        global theme
+        set_theme_to_user_theme()
+        app = create_app_window()
+        if(file_selector.get_path() != ""):
+            icopath = ImageTk.PhotoImage(file=file_selector.get_path())
+            app.iconphoto(True, icopath)
+        draw_widgets(app, True)
     if(entry_width.get() + entry_height.get() != ""):
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
         app.title(f"{entry_name.get()}")
     if(file_selector.get_path() != ""):
         icopath = ImageTk.PhotoImage(file=file_selector.get_path())
-        app.iconphoto(False, icopath)
-    # todo: fix this - Current limitation is that set_default_color_theme applies to the entire window, not the app
-    # and also it doesn't update the app appearance in real time. One way would be to adjust the colours of the drawn
-    # widgets in real time i.e. fg_color = current_theme col, but then that would get sent to boilerplate generator.
-    # ill come back to this when im wiser 
-    if(combo_theme_selector.get() != ""): 
-        global theme
-        theme = combo_theme_selector.get()
-        theme = theme.replace(" ", "-")
-        theme = theme.lower()
-        ctk.set_default_color_theme(theme)
-        app = create_app_window()
-        draw_widgets(app, True)
-
+        app.iconphoto(True, icopath)
+    
 def delete_widget_from_frame(widget):
     widget.get('widget').destroy()
     frame_widgets.remove_widget(widget.get('widget'))
     active_widgets.remove(widget)
 
 def move_widget_up_in_frame(widget):
+    ctk.set_default_color_theme('blue')
     global active_widgets
     widget_index = 0
     for active_widget in active_widgets:
@@ -218,9 +229,11 @@ def move_widget_up_in_frame(widget):
     if(widget_index != 0):
         active_widgets[widget_index], active_widgets[widget_index - 1] = active_widgets[widget_index - 1], active_widgets[widget_index]
     frame_widgets.update_grid(active_widgets)
+    set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
 def move_widget_down_in_frame(widget):
+    ctk.set_default_color_theme('blue')
     global active_widgets
     widget_index = 0
     for active_widget in active_widgets:
@@ -230,14 +243,15 @@ def move_widget_down_in_frame(widget):
     if(widget_index != len(active_widgets)- 1):
         active_widgets[widget_index], active_widgets[widget_index + 1] = active_widgets[widget_index + 1], active_widgets[widget_index]
     frame_widgets.update_grid(active_widgets)
+    set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
 def add_bindings(draw=True, updated_menu=None):
     for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
-            theme = "blue"
-            ctk.set_default_color_theme(theme)
+            ctk.set_default_color_theme('blue')
             frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w), move_up_cb=lambda w=widget_instance: move_widget_up_in_frame(w), move_down_cb=lambda w=widget_instance: move_widget_down_in_frame(w))
+            set_theme_to_user_theme()
         if(not(widget_instance.get("has_bindings"))):
             widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance.get('widget'): do_popup(event, widget=w, frame=new_right_click_menu(w._nametowidget(w.winfo_parent()))))
             widget_instance.get('widget').bind("<Double-Button-1>", lambda event, w=widget_instance: open_editor_window(w))
@@ -247,10 +261,7 @@ def add_bindings(draw=True, updated_menu=None):
         draw_widgets()
 
 def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={},**kwargs):
-    theme = combo_theme_selector.get()
-    theme = theme.replace(" ", "-")
-    theme = theme.lower()
-    ctk.set_default_color_theme(theme)
+    set_theme_to_user_theme()
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
@@ -370,11 +381,13 @@ def edit_widget_attributes(widget):
             widget.get("widget").configure(image=image)
 
 def open_editor_window(widget):
+    ctk.set_default_color_theme('blue')
     global attribute_editor_window
     if(attribute_editor_window):
         attribute_editor_window.change_edited_widget(widget)
     else:
         attribute_editor_window = AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
+    set_theme_to_user_theme()
 
 def change_widget_id(widget, id):
     for widgets in active_widgets:
@@ -392,6 +405,8 @@ def set_preferences(dictionary):
     export_preferences = dictionary
 
 def export_preferences_editor():
+    theme = 'blue'
+    ctk.set_default_color_theme(theme)
     export = ExportPreferenceHandler(editor_window, pref_dict=export_preferences)
     export.set_set_preferences_cb(lambda: set_preferences(export.get_preferences_dict()))  # the button needs a reference to the function to update the export preferences
 
@@ -418,6 +433,7 @@ def save_project(args=None):
     with open(f"{save_path}", "w") as write_file:
         data_to_save = ["This is some data regarding a custom tkinter application"]
         data_to_save.append(f"The file has dimensions of ({entry_width.get()}x{entry_height.get()}) and a title of {entry_name.get()}, and has a theme of {combo_theme_selector.get()}")
+        data_to_save.append(file_selector.get_path())
         for active_widget in active_widgets:
             save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
             data_to_save.append(save)
@@ -448,7 +464,7 @@ def open_project(args=None):
 
                 apply_window_settings()         # deal with themes
 
-                for item in new_data[2:]: # rest of data is widgets
+                for item in new_data[3:]: # rest of data is widgets
                     item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
                     create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)
     else:
@@ -462,7 +478,7 @@ theme = "blue"
 editor_window = ctk.CTk()
 editor_window.geometry("400x500")
 editor_window.resizable(width=False, height=False)
-editor_window.title("CTk EasyEditor")
+editor_window.title("CTKEasyEditor")
 
 # menubar settings starts
 menu = CTkMenuBar(master=editor_window)
@@ -514,7 +530,7 @@ entry_name.place(x=55, y=70)
 label_left_name = ctk.CTkLabel(frame_window_settings, text="Title")
 label_left_name.place(x=10, y=70)
 
-file_selector = CTkFileSelector(frame_window_settings, entry_padding=(20, 5), label="Icon")
+file_selector = CTkFileSelector(frame_window_settings,entry_width=115, entry_padding=(20, 5), label="Icon")
 file_selector.place(x=10, y=100)
 
 label_theme_selection = ctk.CTkLabel(frame_window_settings, text="Select a theme:")

@@ -123,6 +123,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.check_attributes(self.attributes_to_edit)
 
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
+
+        self.populate_existing_fields()
     
     def check_attributes(self, attributes_to_edit):
         if("size_adjustments" in attributes_to_edit):
@@ -269,14 +271,14 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.frame_switch_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
             self.frame_switch_adjustments.place(x=10, y=self.current_y)
 
-            self.label_switch_width = ctk.CTkLabel(self.frame_switch_adjustments, text="Checkbox Width")
+            self.label_switch_width = ctk.CTkLabel(self.frame_switch_adjustments, text="Switch Width")
             self.label_switch_width.place(x=10, y=5)
             self.entry_switch_width = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="width", width=70, height=10)
             self.entry_switch_width.place(x=205, y=8)
             self.label_switch_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
             self.label_switch_width_px.place(x=260, y=5)
 
-            self.label_switch_height = ctk.CTkLabel(self.frame_switch_adjustments, text="Checkbox Height")
+            self.label_switch_height = ctk.CTkLabel(self.frame_switch_adjustments, text="Switch Height")
             self.label_switch_height.place(x=10, y=30)
             self.entry_switch_height = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="height", width=70, height=10)
             self.entry_switch_height.place(x=205, y=33)
