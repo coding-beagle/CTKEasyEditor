@@ -229,7 +229,7 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
-    if widget_class and widget_class != None:
+    if widget_class is not None:
         location_x, location_y = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
         number_of_same_widgets = 0
         for active_widget in active_widgets:
@@ -365,8 +365,6 @@ editor_window.geometry("400x500")
 editor_window.resizable(width=False, height=False)
 editor_window.title("CTk EasyEditor")
 
-
-
 # menubar settings starts
 menu = CTkMenuBar(master=editor_window)
 
@@ -384,45 +382,45 @@ dropdown_file.add_option(option="Preferences...", command=export_preferences_edi
 label_window_settings = ctk.CTkLabel(editor_window, text="Window Settings")
 label_window_settings.pack(anchor="w", padx=15)
 
-window_settings_frame = ctk.CTkFrame(editor_window, width=380, height=140)
+frame_window_settings = ctk.CTkFrame(editor_window, width=380, height=140)
 
-label_entry_width = ctk.CTkLabel(window_settings_frame, text="px")
+label_entry_width = ctk.CTkLabel(frame_window_settings, text="px")
 label_entry_width.place(x=200, y=10)
-label_left_entry_width = ctk.CTkLabel(window_settings_frame, text="Width")
+label_left_entry_width = ctk.CTkLabel(frame_window_settings, text="Width")
 label_left_entry_width.place(x=10, y=10)
-entry_width = ctk.CTkEntry(window_settings_frame, placeholder_text = "Width of Window")
+entry_width = ctk.CTkEntry(frame_window_settings, placeholder_text = "Width of Window")
 entry_width.place(x=55, y=10)
 entry_width.insert(0, 500)
 
-entry_height = ctk.CTkEntry(window_settings_frame, placeholder_text= "Height of Window")
+entry_height = ctk.CTkEntry(frame_window_settings, placeholder_text= "Height of Window")
 entry_height.place(x=55, y=40)
-label_left_entry_height = ctk.CTkLabel(window_settings_frame, text="Height")
+label_left_entry_height = ctk.CTkLabel(frame_window_settings, text="Height")
 label_left_entry_height.place(x=10, y=40)
-label_entry_width = ctk.CTkLabel(window_settings_frame, text="px")
+label_entry_width = ctk.CTkLabel(frame_window_settings, text="px")
 label_entry_width.place(x=200, y=40)
 entry_height.insert(0, 500)
 
 
-entry_name = ctk.CTkEntry(window_settings_frame, placeholder_text= "App Name")
+entry_name = ctk.CTkEntry(frame_window_settings, placeholder_text= "App Name")
 entry_name.place(x=55, y=70)
-label_left_name = ctk.CTkLabel(window_settings_frame, text="Title")
+label_left_name = ctk.CTkLabel(frame_window_settings, text="Title")
 label_left_name.place(x=10, y=70)
 
-file_selector = CTkFileSelector(window_settings_frame, entry_padding=(20, 5), label="Icon")
+file_selector = CTkFileSelector(frame_window_settings, entry_padding=(20, 5), label="Icon")
 file_selector.place(x=10, y=100)
 
 # see function apply_window_settings for why this isn't implemented yet
-label_theme_selection = ctk.CTkLabel(window_settings_frame, text="Select a theme:")
+label_theme_selection = ctk.CTkLabel(frame_window_settings, text="Select a theme:")
 label_theme_selection.place(x=250, y=70)
-combo_theme_selector = ctk.CTkSegmentedButton(window_settings_frame, values=["Blue", "Dark Blue", "Green"],height=30)
+combo_theme_selector = ctk.CTkSegmentedButton(frame_window_settings, values=["Blue", "Dark Blue", "Green"],height=30)
 combo_theme_selector.place(x=215, y=100)
 
 combo_theme_selector.set('Blue')
 
-button_apply_settings = ctk.CTkButton(window_settings_frame, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
+button_apply_settings = ctk.CTkButton(frame_window_settings, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
 button_apply_settings.place(x=250, y = 10)
 
-window_settings_frame.pack(pady=0)
+frame_window_settings.pack(pady=0)
 # windows settings end
 
 app = None

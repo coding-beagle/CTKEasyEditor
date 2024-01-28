@@ -7,7 +7,9 @@ Todo:
 
 Bugs encountered:
 
-- Lots of error messages but the app still seems to work fine
+- **(Fixed)** Lots of error messages but the app still seems to work fine
+- **(Fixed)** The error messages were because the app was not working fine.
+- **(Fixed)** Error messages were being caused by app window being duplicated in create_app_window() function
 
 Completed:
 
