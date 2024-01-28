@@ -178,7 +178,7 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
     global app
     if(app == None or app.winfo_exists() == False):
         app = create_app_window()
-        draw_widgets(app)
+        draw_widgets(app, True)
     if(entry_width.get() + entry_height.get() != ""):
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
@@ -201,14 +201,17 @@ def delete_widget_from_frame(widget):
     frame_widgets.remove_widget(widget.get('widget'))
     active_widgets.remove(widget)
 
-def update_active_widgets():
+def add_bindings(draw=True, updated_menu=None):
     for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
             frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w))
-            widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance: do_popup(event, widget=w.get('widget'), frame=RightClickMenu))
+        if(not(widget_instance.get("has_bindings"))):
+            widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance.get('widget'): do_popup(event, widget=w, frame=new_right_click_menu(w._nametowidget(w.winfo_parent()))))
             widget_instance.get('widget').bind("<Double-Button-1>", lambda event, w=widget_instance: open_editor_window(w))
             make_draggable(widget_instance)
-    draw_widgets()
+            widget_instance["has_bindings"] = True
+    if(draw):
+        draw_widgets()
 
 def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwargs):
     # Get the widget class from the dictionary
@@ -216,6 +219,10 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwarg
     # If the widget type is valid, create the widget and do all the code necessary
     if widget_class and widget_class != None:
         location_x, location_y = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
+        number_of_same_widgets = 0
+        for active_widget in active_widgets:
+            if(active_widget.get("widget_type")) == str(widget_class):
+                number_of_same_widgets += 1
         if(duplicate):
             location_x += 10
             location_y += 10
@@ -224,17 +231,39 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwarg
                           "widget_name": str(widget_type),  # todo check why we need this
                           "widget_type": str(widget_class),
                           "kwargs": kwargs,
-                          "widget_id": f"{widget_type} {len(active_widgets)}"}  # todo adjust this to be based on the number of widgets of the same type
+                          "widget_id": f"{widget_type} {number_of_same_widgets}",
+                          "has_bindings": False}  
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
     
     active_widgets.append(created_widget)
-    update_active_widgets()
+    add_bindings()
 
-def draw_widgets():
+def new_right_click_menu(master):
+    RightClickMenu = tk.Menu(master, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
+    RightClickMenu.add_command(label="Duplicate", command=duplicate_current_widget)
+    RightClickMenu.add_command(label="Edit", command=edit_current_widget)
+    RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
+    return RightClickMenu
+
+def draw_widgets(new_canvas = None, update_widgets = False):
     for widget in active_widgets:
+        if(new_canvas):
+            kwargs = widget.get('kwargs')
+            widget['widget'] = widget_types.get((widget.get('widget_name')))(new_canvas, **kwargs)
+            widget['has_bindings'] = False
+            widget.get('widget').unbind("<Button-3>")
+            widget.get('widget').unbind("<Button-1>")
+            widget.get('widget').unbind("<B1-Motion>")
+            widget.get('widget').unbind("<Double-Button-1>")
+            
+            right_click_menu=new_right_click_menu(new_canvas)
+            
         x,y = widget.get('location')
         widget.get('widget').place(x=x,y=y)
+    if(update_widgets):
+        add_bindings(draw=False, updated_menu=right_click_menu)
+    
 
 def generate_file(path, export_preferences):
     with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
@@ -256,6 +285,8 @@ def generate_file(path, export_preferences):
             f.write(str(boiler_handler.widget_code(widget, path)))
 
         f.write(boiler_handler.main_loop())
+
+        CTkError(editor_window,title="Successful!",size_y=140, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
 
 def save_logic():
     global export_preferences
@@ -388,10 +419,7 @@ frame_widgets.place(x=10,y=230)
 current_widget = None
 
 # Right Click Menu Begins
-RightClickMenu = tk.Menu(app, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
-RightClickMenu.add_command(label="Duplicate", command=duplicate_current_widget)
-RightClickMenu.add_command(label="Edit", command=edit_current_widget)
-RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
+RightClickMenu = new_right_click_menu(app)
 # Right Click Menu Ends
 
 app.bind("<1>", lambda event: event.widget.focus_set())

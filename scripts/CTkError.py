@@ -1,14 +1,14 @@
 import customtkinter as ctk
 
 class CTkError(ctk.CTkFrame):
-    def __init__(self, *args, error_message, button_1_text, button_2_text="", **kwargs):
+    def __init__(self, *args, title="Error",size_x=140, size_y=90,error_message, button_1_text, button_2_text="", **kwargs):
         super().__init__(*args)
         ## Geometry and Theme Settings
 
         self.top_level = ctk.CTkToplevel(self)
 
-        self.top_level.geometry("140x90")
-        self.top_level.title("Error!")
+        self.top_level.geometry(f"{size_x}x{size_y}")
+        self.top_level.title(title)
         self.top_level.resizable(False, False)
 
         self.Label_1 = ctk.CTkLabel(self.top_level,width=100,text=error_message,wraplength=100)

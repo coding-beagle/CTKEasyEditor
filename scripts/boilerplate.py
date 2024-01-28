@@ -73,7 +73,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
     
 
     def widget_code(self, widget, output_src): # take in widget, create an instance of it using its name, configure all of its kwargs,
-        text = "\n"
+        text = ""
         kwargs = widget.get("kwargs")
 
         arguments = f"master={self.root}"
@@ -111,7 +111,6 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
         x,y = widget.get("location")
 
         widget_type = widget.get("widget_type").split(".")[-1][:-2]
-        ic(widget_type)
         if(widget_type == 'CTkImageFrame'):
             widget_type = 'CTkLabel'
             arguments += ',text=""'

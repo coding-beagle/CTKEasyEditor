@@ -268,7 +268,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
                 kwargs[prop] = bool(value)
             elif info["type"] == tuple and value[0] and value[1]:
                 kwargs[prop] = (str(value[0]), -int(value[1]))
-        
         # Update widget properties only if there are valid changes
         if kwargs:
             self.widget_being_edited["kwargs"] = kwargs
