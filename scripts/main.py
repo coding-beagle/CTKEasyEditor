@@ -166,10 +166,13 @@ def destroy_current_widget():
     delete_widget_from_frame(current_widget)
     
 def create_app_window():
+    global app
+    if(app is not None):
+        app.destroy()
     app = ctk.CTkToplevel(editor_window)
     editor_size,editor_offset_x, editor_offset_y= editor_window.geometry().split("+")
     editor_size_x, _ = editor_size.split("x")
-    app.geometry(f"500x500+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
+    app.geometry(f"{entry_width.get()}x{entry_height.get()}+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
     app.resizable(False, False)
     app.title("App")
     return app
@@ -178,7 +181,7 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
     global app
     if(app == None or app.winfo_exists() == False):
         app = create_app_window()
-        draw_widgets(app, True)
+        # draw_widgets(app, True)
     if(entry_width.get() + entry_height.get() != ""):
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
@@ -271,8 +274,9 @@ def draw_widgets(new_canvas = None, update_widgets = False):
             
         x,y = widget.get('location')
         widget.get('widget').place(x=x,y=y)
-    if(update_widgets):
+    if(update_widgets and not new_canvas):
         add_bindings(draw=False, updated_menu=right_click_menu)
+        
    
 def generate_file(path, export_preferences):
     with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
@@ -361,7 +365,7 @@ editor_window.geometry("400x500")
 editor_window.resizable(width=False, height=False)
 editor_window.title("CTk EasyEditor")
 
-app = create_app_window()
+
 
 # menubar settings starts
 menu = CTkMenuBar(master=editor_window)
@@ -420,6 +424,9 @@ button_apply_settings.place(x=250, y = 10)
 
 window_settings_frame.pack(pady=0)
 # windows settings end
+
+app = None
+app = create_app_window()
 
 # active widgets ui begins, will reimplement as a tree later: https://github.com/TomSchimansky/CustomTkinter/discussions/524
 label_active_widgets = ctk.CTkLabel(editor_window, text="Active Widgets")
