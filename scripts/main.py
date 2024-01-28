@@ -451,6 +451,7 @@ def open_project(args=None):
                 return
             else:
                 active_widgets = []
+                frame_widgets.update_grid()
                 width, height = new_data[1].split("(")[1].split(")")[0].split('x')      # dealing with window settings data
                 entry_width.delete(0, tk.END)
                 entry_width.insert(0, int(width))

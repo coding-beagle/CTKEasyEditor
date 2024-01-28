@@ -60,6 +60,9 @@ class AttributeEditorWindow(ctk.CTkFrame):
 
     def populate_existing_fields(self):
         for key, value in self.widget_being_edited.get("kwargs").items():
+            if(key == "font"):
+                self.property_entries[key]["entry"].insert(0, abs(value[1]))
+                break
             self.property_entries[key]["entry"].insert(0, value)
 
     def update_attributes(self):
