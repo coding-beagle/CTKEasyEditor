@@ -25,7 +25,8 @@ class BoilerPlateHandler():
         text += f"import tkinter as {self.tk_module}\n"
         return text
 
-    def basic_app_window(self,size_x, size_y, icon_path, output_src, title="app"):
+    def basic_app_window(self,size_x, size_y, icon_path, output_src, title="app", theme='blue'):
+        if(title == ''): title = self.root
         if(self.export_oop):
             text = f"""
 class {self.classname}({self.ctk_module}.CTk):
@@ -33,7 +34,7 @@ class {self.classname}({self.ctk_module}.CTk):
         super().__init__()
         ## Geometry and Theme Settings
         {self.ctk_module}.set_appearance_mode("dark")     # todo add these
-        {self.ctk_module}.set_default_color_theme("dark-blue")
+        {self.ctk_module}.set_default_color_theme("{theme}")
 
         self.geometry("{size_x}x{size_y}")
         self.title("{title}")"""

@@ -1,3 +1,22 @@
+**28-01-2024**
+
+Todo:
+
+- Add element rearranging
+- Add custom theme support
+
+Bugs encountered:
+
+- Lots of error messages but the app still seems to work fine
+
+Completed:
+
+- Fixed editor window of elements opening a new window when clicked
+- Changed the widget IDs to be based on the numer of those elements, instead of number of total elements
+- 'Apply Settings' now correctly reloads all of the widgets when the app window is closed (wasn't working before)
+- boilerplate.py indenting issues for image objects
+- Added basic theme management
+
 **27-01-2024**
 
 Todo:
@@ -6,10 +25,10 @@ Todo:
 - Theme editor / theme selector implementation
 - r/therewasanattempt to try and add line drawings to show snap
 
-Bugs:
+Bugs encountered:
 
-- Duplicate on widgets with images, 'image_path', 'image_size_x', 'image_size_y' are being unpacked
-- Duplicate on widgets with different font sizes causes other properties to not be inherited (likely as a result of the font size handling in settingseditor.py)
+- **(FIXED)** Duplicate on widgets with images, 'image_path', 'image_size_x', 'image_size_y' are being unpacked
+- **(FIXED)** Duplicate on widgets with different font sizes causes other properties to not be inherited (likely as a result of the font size handling in settingseditor.py)
 
 Completed:
 
@@ -31,9 +50,9 @@ Todo:
 - Active widget hierarchy adjustments (one fears the thought of touching activewidgethandler.py)
 - Theme editor implementation
 
-Bugs:
+Bugs encountered:
 
-- Need to reopen window with all drawn elemnts when it is closed
+- **(FIXED)** Need to reopen window with all drawn elemnts when it is closed
 - Not a bug, but figure out a way to only import PIL libraries if it is needed, e.g. if there is an image object or something
 
 Completed:
@@ -53,7 +72,7 @@ Todo:
 - Add logic to do naming (i.e. click on widget in active widgets and then rename that)
 - Add logic to move around active widgets in active tab (more drag and drop????)
 
-Bugs:
+Bugs encountered:
 
 - Scrollable Frame doesn't delete properly
 
@@ -71,11 +90,11 @@ Todo:
 
 - Fix Widget Handler
 
-BUgs:
+Bugs encountered:
 
-- Right click menu not completed functionality
-- Need to add widget adding functionality
-- Improve Widget Handler
+- **(FIXED)** Right click menu not completed functionality
+- **(FIXED)** Need to add widget adding functionality
+- **(FIXED)** Improve Widget Handler
 
 Completed:
 
@@ -88,9 +107,9 @@ Todo:
 
 - Fix dragging elements (probably need to refactor the mouse moving code)
 
-Bugs:
+Bugs encountered:
 
-- Fix lag on clicking top bar
+- **(FIXED)** Fix lag on clicking top bar
 
 Completed:
 

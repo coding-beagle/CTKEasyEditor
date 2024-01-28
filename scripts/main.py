@@ -190,11 +190,14 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
     # and also it doesn't update the app appearance in real time. One way would be to adjust the colours of the drawn
     # widgets in real time i.e. fg_color = current_theme col, but then that would get sent to boilerplate generator.
     # ill come back to this when im wiser 
-    # if(combo_theme_selector.get() != ""): 
-    #     theme = combo_theme_selector.get()
-    #     theme = theme.replace(" ", "-")
-    #     theme = theme.lower()
-    #     ctk.set_default_color_theme(theme)
+    if(combo_theme_selector.get() != ""): 
+        global theme
+        theme = combo_theme_selector.get()
+        theme = theme.replace(" ", "-")
+        theme = theme.lower()
+        ctk.set_default_color_theme(theme)
+        app = create_app_window()
+        draw_widgets(app, True)
 
 def delete_widget_from_frame(widget):
     widget.get('widget').destroy()
@@ -204,6 +207,8 @@ def delete_widget_from_frame(widget):
 def add_bindings(draw=True, updated_menu=None):
     for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
+            theme = "blue"
+            ctk.set_default_color_theme(theme)
             frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w))
         if(not(widget_instance.get("has_bindings"))):
             widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance.get('widget'): do_popup(event, widget=w, frame=new_right_click_menu(w._nametowidget(w.winfo_parent()))))
@@ -214,6 +219,10 @@ def add_bindings(draw=True, updated_menu=None):
         draw_widgets()
 
 def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],**kwargs):
+    theme = combo_theme_selector.get()
+    theme = theme.replace(" ", "-")
+    theme = theme.lower()
+    ctk.set_default_color_theme(theme)
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
@@ -265,7 +274,6 @@ def draw_widgets(new_canvas = None, update_widgets = False):
     if(update_widgets):
         add_bindings(draw=False, updated_menu=right_click_menu)
    
-
 def generate_file(path, export_preferences):
     with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
         boiler_handler = BoilerPlateHandler()
@@ -274,7 +282,9 @@ def generate_file(path, export_preferences):
         app_width = entry_width.get()
         if(app_height != "" and app_width != ""):
             f.write(boiler_handler.imports())
-            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get()))
+            theme = combo_theme_selector.get().lower()
+            theme = theme.replace(" ", "-")
+            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get(), theme))
         else:
             CTkError(editor_window,error_message="App Dimensions Cannot Be Empty!", button_1_text="Okay")
             try:
@@ -344,6 +354,8 @@ def open_project():
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+theme = "blue"
+
 editor_window = ctk.CTk()
 editor_window.geometry("400x500")
 editor_window.resizable(width=False, height=False)
@@ -396,17 +408,18 @@ file_selector = CTkFileSelector(window_settings_frame, entry_padding=(20, 5), la
 file_selector.place(x=10, y=100)
 
 # see function apply_window_settings for why this isn't implemented yet
-# label_theme_selection = ctk.CTkLabel(window_settings_frame, text="Select a theme:")
-# label_theme_selection.place(x=250, y=70)
-# combo_theme_selector = ctk.CTkSegmentedButton(window_settings_frame, values=["Blue", "Dark Blue", "Green"],height=30)
-# combo_theme_selector.place(x=215, y=100)
+label_theme_selection = ctk.CTkLabel(window_settings_frame, text="Select a theme:")
+label_theme_selection.place(x=250, y=70)
+combo_theme_selector = ctk.CTkSegmentedButton(window_settings_frame, values=["Blue", "Dark Blue", "Green"],height=30)
+combo_theme_selector.place(x=215, y=100)
+
+combo_theme_selector.set('Blue')
 
 button_apply_settings = ctk.CTkButton(window_settings_frame, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
 button_apply_settings.place(x=250, y = 10)
 
 window_settings_frame.pack(pady=0)
 # windows settings end
-
 
 # active widgets ui begins, will reimplement as a tree later: https://github.com/TomSchimansky/CustomTkinter/discussions/524
 label_active_widgets = ctk.CTkLabel(editor_window, text="Active Widgets")
