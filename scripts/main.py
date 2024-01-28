@@ -213,7 +213,7 @@ def add_bindings(draw=True, updated_menu=None):
     if(draw):
         draw_widgets()
 
-def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwargs):
+def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],**kwargs):
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
     # If the widget type is valid, create the widget and do all the code necessary
@@ -223,9 +223,6 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwarg
         for active_widget in active_widgets:
             if(active_widget.get("widget_type")) == str(widget_class):
                 number_of_same_widgets += 1
-        if(duplicate):
-            location_x += 10
-            location_y += 10
         created_widget = {"widget":widget_class(app, **kwargs),
                           "location": (location_x, location_y),
                           "widget_name": str(widget_type),  # todo check why we need this
@@ -235,6 +232,10 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None,**kwarg
                           "has_bindings": False}  
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
+        if(duplicate):
+            created_widget["location"] = (location_x+10, location_y+10)
+            created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
+            edit_widget_attributes(created_widget)
     
     active_widgets.append(created_widget)
     add_bindings()
@@ -263,7 +264,7 @@ def draw_widgets(new_canvas = None, update_widgets = False):
         widget.get('widget').place(x=x,y=y)
     if(update_widgets):
         add_bindings(draw=False, updated_menu=right_click_menu)
-    
+   
 
 def generate_file(path, export_preferences):
     with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
@@ -297,7 +298,7 @@ def save_logic():
 
 def duplicate_current_widget():
     global current_widget
-    create_widget(current_widget.get("widget_name"), True, current_widget,**current_widget.get("kwargs"))
+    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"))
 
 def edit_widget_attributes(widget):
     try:
@@ -307,9 +308,13 @@ def edit_widget_attributes(widget):
         if(widget.get("kwargs").get("image_path")):
             image = ctk.CTkImage(dark_image=Image.open(widget.get("kwargs").get("image_path")), size=(widget.get("kwargs").get("image_size_x"), widget.get("kwargs").get("image_size_y")))
             widget.get("widget").configure(image=image)
-    
+
 def open_editor_window(widget):
-    AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
+    global attribute_editor_window
+    if(attribute_editor_window):
+        attribute_editor_window.change_edited_widget(widget)
+    else:
+        attribute_editor_window = AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
 
 def change_widget_id(widget, id):
     for widgets in active_widgets:
@@ -421,6 +426,9 @@ current_widget = None
 # Right Click Menu Begins
 RightClickMenu = new_right_click_menu(app)
 # Right Click Menu Ends
+
+attribute_editor_window = None
+attributes_is_active = False
 
 app.bind("<1>", lambda event: event.widget.focus_set())
 

@@ -28,8 +28,11 @@ class AttributeEditorWindow(ctk.CTkFrame):
         super().__init__(*args, **kwargs)
         self.widget_being_edited = widget_to_edit
         self.cb_to_apply = apply_settings_cb
+
+        self.widget_being_edited = widget_to_edit
         self.widget_type = str(widget_to_edit.get("widget_name"))
         self.attributes_to_edit = self.attributes.get(str(self.widget_type))
+
         self.toplevel = ctk.CTkToplevel()
         self.toplevel.attributes('-topmost', 'true')
         self.toplevel.title(f"Widget Properties Editor")
@@ -47,8 +50,82 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.button_apply = ctk.CTkButton(self.toplevel, text='Apply Settings', height=30, width=50, corner_radius=10, command=self.update_attributes)
         self.button_apply.place(x=190, y=10)
         
-        # todo rework this to have the same system as preferences handler.py?
-        if("size_adjustments" in self.attributes_to_edit):
+        self.check_attributes(self.attributes_to_edit)
+
+        editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
+        _, editor_size_y = editor_size.split("x")
+        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
+    
+        self.populate_existing_fields()
+
+    def populate_existing_fields(self):
+        for key, value in self.widget_being_edited.get("kwargs").items():
+            self.property_entries[key]["entry"].insert(0, value)
+
+    def update_attributes(self):
+        kwargs = {}
+        for prop, info in self.property_entries.items():
+            if(prop == "image_path"):   # rework this?
+                value = self.image_sel.get_path()
+            elif(prop == "font"):
+                value = ("roboto", info["entry"].get())
+            else:
+                value = info["entry"].get()
+            if info["type"] == int and value.isdigit():
+                kwargs[prop] = int(value)
+            elif info["type"] == str and value or prop=="show":
+                kwargs[prop] = str(value)
+            elif info["type"] == bool:
+                kwargs[prop] = bool(value)
+            elif info["type"] == tuple and value[0] and value[1]:
+                kwargs[prop] = (str(value[0]), -int(value[1]))
+        # Update widget properties only if there are valid changes
+        if kwargs:
+            self.widget_being_edited["kwargs"] = kwargs
+        else:
+            print("No valid inputs to update.")
+
+        self.cb_to_apply(self.widget_being_edited)
+    
+    def change_edited_widget(self, widget_to_edit):
+        self.widget_being_edited = widget_to_edit
+        self.widget_type = str(widget_to_edit.get("widget_name"))
+        self.attributes_to_edit = self.attributes.get(str(self.widget_type))
+        
+        self.size_x = 300
+        self.size_y = 50
+        try:
+            self.toplevel.geometry(f"300x50")
+            self.property_entries = {}
+        except:
+
+            self.toplevel = ctk.CTkToplevel()
+            self.toplevel.attributes('-topmost', 'true')
+            self.toplevel.title(f"Widget Properties Editor")
+            self.toplevel.resizable(False, False)
+
+            editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
+            _, editor_size_y = editor_size.split("x")
+
+            self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")
+            self.property_entries = {}
+
+        for widget in self.toplevel.winfo_children():
+            widget.destroy()
+
+        self.label_widget_type = ctk.CTkLabel(self.toplevel,width=50, text=f"Edit {self.widget_being_edited.get('widget_id')}")
+        self.label_widget_type.cget("font").configure(size=20)
+        self.label_widget_type.place(x=10,y=10)
+        
+        self.button_apply = ctk.CTkButton(self.toplevel, text='Apply Settings', height=30, width=50, corner_radius=10, command=self.update_attributes)
+        self.button_apply.place(x=190, y=10)
+
+        self.check_attributes(self.attributes_to_edit)
+
+        self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
+    
+    def check_attributes(self, attributes_to_edit):
+        if("size_adjustments" in attributes_to_edit):
             self.current_y = self.size_y
             self.size_y += 125
             self.frame_size_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 115)
@@ -87,7 +164,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["corner_radius"] = {"entry": self.entry_corner_radius, "type": int}
             self.property_entries["border_width"] = {"entry": self.entry_border_width, "type": int}
 
-        if("text_adjustments" in self.attributes_to_edit):
+        if("text_adjustments" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 70
             self.frame_text_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
@@ -108,7 +185,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["text"] = {"entry": self.entry_text, "type": str}
             self.property_entries["font"] = {"entry": self.entry_font_size, "type": tuple}
 
-        if("textbox" in self.attributes_to_edit):
+        if("textbox" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 95
             self.frame_textbox_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 85)
@@ -135,7 +212,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["activate_scrollbars"] = {"entry": self.switch_scrollbars, "type": bool}
             self.property_entries["wrap"] = {"entry": self.menu_wrapping, "type": str}
         
-        if("image_adjustments" in self.attributes_to_edit):
+        if("image_adjustments" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 100
 
@@ -163,7 +240,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["image_size_x"] = {"entry": self.entry_image_size_x, "type": int}
             self.property_entries["image_size_y"] = {"entry": self.entry_image_size_y, "type": int}
 
-        if("checkbox" in self.attributes_to_edit):
+        if("checkbox" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 70
             self.frame_checkbox_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
@@ -186,7 +263,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["checkbox_width"] = {"entry": self.entry_checkbox_width, "type": int}
             self.property_entries["checkbox_height"] = {"entry": self.entry_checkbox_height, "type": int}
 
-        if("switch_adjustments" in self.attributes_to_edit):
+        if("switch_adjustments" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 70
             self.frame_switch_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
@@ -209,7 +286,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["switch_width"] = {"entry": self.entry_switch_width, "type": int}
             self.property_entries["switch_height"] = {"entry": self.entry_switch_height, "type": int}
 
-        if("placeholder_text" in self.attributes_to_edit):
+        if("placeholder_text" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 70
             self.frame_placeholder_text = ctk.CTkFrame(self.toplevel, width=280, height = 60)
@@ -228,7 +305,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["placeholder_text"] = {"entry": self.entry_placeholder_text, "type": str}
             self.property_entries["show"] = {"entry": self.checkbox_hidetext, "type": str}
 
-        if("scroll_dir" in self.attributes_to_edit):
+        if("scroll_dir" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 40
             self.frame_scroll_direction = ctk.CTkFrame(self.toplevel, width=280, height = 30)
@@ -241,38 +318,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             
             self.property_entries["orientation"] = {"entry": self.menu_scroll_dir, "type": str}      # for some reason this doesn't change on demand, only on duplicating widget
 
-        editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
-        _, editor_size_y = editor_size.split("x")
-        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
-    
-        self.populate_existing_fields()
+    def get_current_widget(self):
+        return self.widget_being_edited
 
-    def populate_existing_fields(self):
-        for key, value in self.widget_being_edited.get("kwargs").items():
-            self.property_entries[key]["entry"].insert(0, value)
-
-    def update_attributes(self):
-        kwargs = {}
-        for prop, info in self.property_entries.items():
-            if(prop == "image_path"):   # rework this?
-                value = self.image_sel.get_path()
-            elif(prop == "font"):
-                value = ("roboto", info["entry"].get())
-            else:
-                value = info["entry"].get()
-            if info["type"] == int and value.isdigit():
-                kwargs[prop] = int(value)
-            elif info["type"] == str and value or prop=="show":
-                kwargs[prop] = str(value)
-            elif info["type"] == bool:
-                kwargs[prop] = bool(value)
-            elif info["type"] == tuple and value[0] and value[1]:
-                kwargs[prop] = (str(value[0]), -int(value[1]))
-        # Update widget properties only if there are valid changes
-        if kwargs:
-            self.widget_being_edited["kwargs"] = kwargs
-        else:
-            print("No valid inputs to update.")
-
-        self.cb_to_apply(self.widget_being_edited)
 

@@ -103,7 +103,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
                 shutil.copyfile(image_path, f"{output_src}/{filename}")
             except shutil.SameFileError:
                 pass
-            text += f"{'        self.' if self.export_oop else ''}image_{widget_name} = {self.ctk_module}.CTkImage(dark_image=Image.open('{output_src}/{filename}'), size=({kwargs.get('image_size_x')}, {kwargs.get('image_size_y')}))"
+            text += f"\n{'        self.' if self.export_oop else ''}image_{widget_name} = {self.ctk_module}.CTkImage(dark_image=Image.open('{output_src}/{filename}'), size=({kwargs.get('image_size_x')}, {kwargs.get('image_size_y')}))"
 
         if(self.export_oop):
             arguments = arguments.replace( f"master={self.root}", "self")
