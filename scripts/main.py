@@ -260,7 +260,7 @@ def add_bindings(draw=True, updated_menu=None):
     if(draw):
         draw_widgets()
 
-def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={},**kwargs):
+def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={}, widget_command=None,**kwargs):
     set_theme_to_user_theme()
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
@@ -283,11 +283,14 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
         if(duplicate):
             created_widget["location"] = (location_x+10, location_y+10)
             created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
+            created_widget["command"] = widget_command
             edit_widget_attributes(created_widget)
         if(from_file):
             created_widget["location"] = from_file_dict["location"]
             created_widget["kwargs"] = from_file_dict["kwargs"]   # this is needed because image is part of kwargs for some reason
             created_widget["widget_id"] = from_file_dict["widget_id"]
+            if("command" in from_file_dict):
+                created_widget["command"] = from_file_dict["command"]
             edit_widget_attributes(created_widget)
     
     active_widgets.append(created_widget)
@@ -341,11 +344,15 @@ def generate_file(path, export_preferences):
         boiler_handler.set_preferences(export_preferences)
         app_height = entry_height.get()
         app_width = entry_width.get()
+        
+        boiler_handler.check_for_images(active_widgets, file_selector.get_path())
+        boiler_handler.check_for_commands(active_widgets)
+
         if(app_height != "" and app_width != ""):
             f.write(boiler_handler.imports())
             theme = combo_theme_selector.get().lower()
             theme = theme.replace(" ", "-")
-            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get(), theme))
+            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get(), theme, active_widgets_list=active_widgets))
         else:
             CTkError(editor_window,error_message="App Dimensions Cannot Be Empty!", button_1_text="Okay")
             try:
@@ -369,7 +376,7 @@ def save_logic():
 
 def duplicate_current_widget():
     global current_widget
-    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"))
+    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command"))
 
 def edit_widget_attributes(widget):
     try:
@@ -436,6 +443,10 @@ def save_project(args=None):
         data_to_save.append(file_selector.get_path())
         for active_widget in active_widgets:
             save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
+            try:
+                save.append(active_widget["command"])
+            except KeyError:
+                pass
             data_to_save.append(save)
         json.dump(data_to_save, write_file, indent=2)
 
@@ -445,7 +456,10 @@ def open_project(args=None):
     file_path = filedialog.askopenfile(initialdir=curr_dir, filetypes=[("Json File","*.json")])
     if(file_path is not None):
         with open (str(file_path.name), "r") as file:
-            new_data = json.load(file)
+            try:
+                new_data = json.load(file)
+            except json.decoder.JSONDecodeError:
+                CTkError(editor_window, error_message="Bad File!",button_1_text="Okay")                
             if(new_data[0] != "This is some data regarding a custom tkinter application"):
                 CTkError(editor_window, error_message="This file is not correct!",button_1_text="Okay")
                 return
@@ -467,11 +481,13 @@ def open_project(args=None):
                 apply_window_settings()         # deal with themes
 
                 for item in new_data[3:]: # rest of data is widgets
-                    item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
+                    if(len(item) == 4):
+                        item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
+                    else:
+                        item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command": item[4]}
                     if("font" in item_dict["kwargs"]):
                         item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
-                    create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)
-                
+                    create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)        
                 
     else:
         return    
@@ -529,7 +545,6 @@ label_left_entry_height.place(x=10, y=40)
 label_entry_width = ctk.CTkLabel(frame_window_settings, text="px")
 label_entry_width.place(x=200, y=40)
 entry_height.insert(0, 500)
-
 
 entry_name = ctk.CTkEntry(frame_window_settings, placeholder_text= "App Name")
 entry_name.place(x=55, y=70)

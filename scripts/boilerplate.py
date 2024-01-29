@@ -7,6 +7,8 @@ class BoilerPlateHandler():
         self.preferences = {}
         self.ctk_module = ""
         self.tk_module = ""
+        self.need_images = False
+        self.need_commands = False
 
     def set_preferences(self, dict):
         self.preferences = dict
@@ -18,18 +20,61 @@ class BoilerPlateHandler():
 
         if(self.export_oop and self.classname == ""):
             self.classname = f"{self.root[:-1].upper()}{self.root[:1]}"
+    
+    def check_for_images(self, active_widgets_list, icon_path):  # this flag determines whether or not we need to include the PIL Image libraries
+        if(icon_path):
+            self.need_images = True
+            return
+        for active_widget in active_widgets_list:
+            if("image_path" in active_widget.get("kwargs")):
+                self.need_images = True
+                return
+        else:
+            self.need_images = False
+
+    def check_for_commands(self, active_widgets_list):  # this flag determines whether or not we need to write out the functions for the command of buttons
+        for active_widget in active_widgets_list:
+            try:
+                if('command' in active_widget):
+                    self.need_commands = True
+                    return
+            except KeyError:
+                pass
+        self.need_commands = False
+        return
+
+    def write_callbacks(self, active_widgets_list):
+        text = ''
+        if(self.need_commands):
+            for active_widget in active_widgets_list:
+                if("command" in active_widget):
+                    command_to_write = active_widget.get("command")
+                    command_to_write = command_to_write.replace(" ", "_")
+                else:
+                    command_to_write = None
+
+                if(command_to_write is not None and text.find(str(command_to_write)) == -1):   # check if widget has a command= property associated to it, or if the command callback already exists
+                    text += f"""{'    ' if self.export_oop else ''}def {command_to_write} ({'self' if self.export_oop else ''}):
+{'      ' if self.export_oop else '  '} ## callback code goes here
+{'      ' if self.export_oop else '  '}return\n"""
+        
+        return text
 
     def imports(self):
         text = f"import customtkinter as {self.ctk_module}\n"
-        text += f"from PIL import ImageTk, Image\n"     # probably a smart way of detecting whether or not images exist
+        if(self.need_images):
+            text += f"from PIL import ImageTk, Image\n"     # probably a smart way of detecting whether or not images exist
         text += f"import tkinter as {self.tk_module}\n"
         return text
 
-    def basic_app_window(self,size_x, size_y, icon_path, output_src, title="app", theme='blue'):
+    def basic_app_window(self,size_x, size_y, icon_path, output_src, title="app", theme='blue', active_widgets_list=[]):
         if(title == ''): title = self.root
+        callbacks = self.write_callbacks(active_widgets_list)
+        ic(callbacks)
+        self.callback_text = f"\n{callbacks}\n"
         if(self.export_oop):
             text = f"""
-class {self.classname}({self.ctk_module}.CTk):
+class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callback_text != "" else ''}
     def __init__(self):
         super().__init__()
         ## Geometry and Theme Settings
@@ -52,6 +97,8 @@ class {self.classname}({self.ctk_module}.CTk):
             return f"{text}\n"
         else:
             text =f"""
+{self.write_callbacks(active_widgets_list)}
+            
 ## Geometry and Theme Settings
 {self.ctk_module}.set_appearance_mode("dark")     # todo add these
 {self.ctk_module}.set_default_color_theme("dark-blue")
@@ -115,9 +162,14 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
         if(widget_type == 'CTkImageFrame'):
             widget_type = 'CTkLabel'
             arguments += ',text=""'
+        
+        if("command" in widget):
+            widget_command = widget.get('command').replace(' ', '_')
+        else:
+            widget_command = None
 
         text += f"""
-{"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget_type}({arguments})
+{"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget_type}({arguments}{f",command={'self.' if self.export_oop else ''}{widget_command}" if widget_command is not None else ""})
 {"        self." if self.export_oop else ""}{widget_name}.place(x={x}, y={y})\n"""
         return text
 

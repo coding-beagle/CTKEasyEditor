@@ -5,7 +5,7 @@ from icecream import ic
 class AttributeEditorWindow(ctk.CTkFrame):
      
     attributes = {
-    "Button": ["size_adjustments", "image_adjustments","text_adjustments"],
+    "Button": ["size_adjustments", "command_options","image_adjustments","text_adjustments"],
     "Label": ["size_adjustments", "image_adjustments","text_adjustments"],
     "Text Box": ["size_adjustments", "textbox"], # uncomplete
     "Check Box": ["size_adjustments", "text_adjustments", "checkbox"],
@@ -62,8 +62,13 @@ class AttributeEditorWindow(ctk.CTkFrame):
         for key, value in self.widget_being_edited.get("kwargs").items():
             if(key == "font"):
                 self.property_entries[key]["entry"].insert(0, abs(value[1]))
-                break
+                continue
             self.property_entries[key]["entry"].insert(0, value)
+        try:
+            command = self.widget_being_edited["command"]
+            self.property_entries["command"]["entry"].insert(0, str(command))
+        except KeyError:
+            return
 
     def update_attributes(self):
         kwargs = {}
@@ -83,10 +88,12 @@ class AttributeEditorWindow(ctk.CTkFrame):
             elif info["type"] == tuple and value[0] and value[1]:
                 kwargs[prop] = (str(value[0]), -int(value[1]))
         # Update widget properties only if there are valid changes
+        if "command" in kwargs:
+            self.widget_being_edited["command"] = kwargs["command"]
+            kwargs.pop("command")       # we don't actually want to attach the callback for the widget in our editor window
         if kwargs:
             self.widget_being_edited["kwargs"] = kwargs
-        else:
-            print("No valid inputs to update.")
+        
 
         self.cb_to_apply(self.widget_being_edited)
     
@@ -217,6 +224,19 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.property_entries["activate_scrollbars"] = {"entry": self.switch_scrollbars, "type": bool}
             self.property_entries["wrap"] = {"entry": self.menu_wrapping, "type": str}
         
+        if("command_options" in attributes_to_edit):
+            self.current_y = self.size_y       # these windows always get added at the bottom
+            self.size_y += 50
+            self.frame_command = ctk.CTkFrame(self.toplevel, width=280, height = 40)
+            self.frame_command.place(x=10, y=self.current_y)
+
+            self.label_command_cb_name = ctk.CTkLabel(self.frame_command, text="Command Callback Name:")
+            self.label_command_cb_name.place(x=10, y=5)
+            self.entry_cb_name = ctk.CTkEntry(self.frame_command, placeholder_text="cb name", width=90, height=10)
+            self.entry_cb_name.place(x=185, y=8)
+
+            self.property_entries["command"] = {"entry": self.entry_cb_name, "type": str}
+
         if("image_adjustments" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
             self.size_y += 100
