@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from CTkFileSelector import *
 from icecream import ic
+from CTkColorPicker import *
 
 class AttributeEditorWindow(ctk.CTkFrame):
      
@@ -63,12 +64,15 @@ class AttributeEditorWindow(ctk.CTkFrame):
             if(key == "font"):
                 self.property_entries[key]["entry"].insert(0, abs(value[1]))
                 continue
-            self.property_entries[key]["entry"].insert(0, value)
-        try:
-            command = self.widget_being_edited["command"]
-            self.property_entries["command"]["entry"].insert(0, str(command))
-        except KeyError:
-            return
+            if(isinstance(self.property_entries[key]["entry"], ctk.CTkEntry)):
+                self.property_entries[key]["entry"].insert(0, value)
+            elif(isinstance(self.property_entries[key]["entry"], ctk.CTkCheckBox)):
+                self.property_entries[key]["entry"].select()
+            
+     
+        if("command_name" in self.widget_being_edited):
+            self.property_entries["command_name"]["entry"].insert(0, str(self.widget_being_edited["command_name"]))
+        
 
     def update_attributes(self):
         kwargs = {}
@@ -88,9 +92,9 @@ class AttributeEditorWindow(ctk.CTkFrame):
             elif info["type"] == tuple and value[0] and value[1]:
                 kwargs[prop] = (str(value[0]), -int(value[1]))
         # Update widget properties only if there are valid changes
-        if "command" in kwargs:
-            self.widget_being_edited["command"] = kwargs["command"]
-            kwargs.pop("command")       # we don't actually want to attach the callback for the widget in our editor window
+        if "command_name" in kwargs:
+            self.widget_being_edited["command_name"] = kwargs["command_name"]
+            kwargs.pop("command_name")       # we don't actually want to attach the callback for the widget in our editor window
         if kwargs:
             self.widget_being_edited["kwargs"] = kwargs
         
@@ -184,8 +188,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
 
             self.label_text = ctk.CTkLabel(self.frame_text_adjustments, text="Text")
             self.label_text.place(x=10, y=5)
-            self.entry_text = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="text", width=70, height=10)
-            self.entry_text.place(x=205, y=8)
+            self.entry_text = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="text", width=120, height=10)
+            self.entry_text.place(x=155, y=8)
 
             self.label_font_size = ctk.CTkLabel(self.frame_text_adjustments, text="Font Size")
             self.label_font_size.place(x=10, y=30)
@@ -235,7 +239,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.entry_cb_name = ctk.CTkEntry(self.frame_command, placeholder_text="cb name", width=90, height=10)
             self.entry_cb_name.place(x=185, y=8)
 
-            self.property_entries["command"] = {"entry": self.entry_cb_name, "type": str}
+            self.property_entries["command_name"] = {"entry": self.entry_cb_name, "type": str}
 
         if("image_adjustments" in attributes_to_edit):
             self.current_y = self.size_y       # these windows always get added at the bottom
@@ -342,6 +346,9 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.menu_scroll_dir.place(x=190, y=5)
             
             self.property_entries["orientation"] = {"entry": self.menu_scroll_dir, "type": str}      # for some reason this doesn't change on demand, only on duplicating widget
+
+        if("color" in attributes_to_edit):
+            pass
 
     def get_current_widget(self):
         return self.widget_being_edited

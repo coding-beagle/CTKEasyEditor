@@ -14,6 +14,7 @@ from preferenceshandler import *
 from CTkImage import *
 from CTkError import *
 import json
+from sys import platform
 
 widget_types = {
     "Add Widgets Here": None,
@@ -187,10 +188,6 @@ def create_app_window():
     app.resizable(False, False)
     app.title(entry_name.get())
 
-    if(file_selector.get_path() != ""):
-        icopath = ImageTk.PhotoImage(file=file_selector.get_path())
-        app.iconphoto(True, icopath)
-
     return app
 
 def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt HAVE TO BE GLOBAl
@@ -202,16 +199,15 @@ def apply_window_settings(): # todo, maybe not repeating code here, app shOULDnt
         set_theme_to_user_theme()
         app = create_app_window()
         if(file_selector.get_path() != ""):
-            icopath = ImageTk.PhotoImage(file=file_selector.get_path())
-            app.iconphoto(True, icopath)
+            app.after(200, lambda: app.iconbitmap(file_selector.get_path()))
         draw_widgets(app, True)
     if(entry_width.get() + entry_height.get() != ""):
         app.geometry(f"{entry_width.get()}x{entry_height.get()}")
     if(entry_name.get() != ""):    
         app.title(f"{entry_name.get()}")
     if(file_selector.get_path() != ""):
-        icopath = ImageTk.PhotoImage(file=file_selector.get_path())
-        app.iconphoto(True, icopath)
+        if platform.startswith("win"):
+            app.after(200, lambda: app.iconbitmap(file_selector.get_path()))
     
 def delete_widget_from_frame(widget):
     widget.get('widget').destroy()
@@ -283,14 +279,14 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
         if(duplicate):
             created_widget["location"] = (location_x+10, location_y+10)
             created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
-            created_widget["command"] = widget_command
+            created_widget["command_name"] = widget_command
             edit_widget_attributes(created_widget)
         if(from_file):
             created_widget["location"] = from_file_dict["location"]
             created_widget["kwargs"] = from_file_dict["kwargs"]   # this is needed because image is part of kwargs for some reason
             created_widget["widget_id"] = from_file_dict["widget_id"]
-            if("command" in from_file_dict):
-                created_widget["command"] = from_file_dict["command"]
+            if("command_name" in from_file_dict):
+                created_widget["command_name"] = from_file_dict["command_name"]
             edit_widget_attributes(created_widget)
     
     active_widgets.append(created_widget)
@@ -311,6 +307,7 @@ def new_right_click_menu(master):
     RightClickMenu.add_command(label="Delete", command=destroy_current_widget)
     RightClickMenu.add_command(label="Bring Up One Layer", command=bring_up_a_layer)        # todo these are currently reversed in viewport, e.g. higher in active_widgets == drawn first, whereas it should be the opposite
     RightClickMenu.add_command(label="Bring Down One Layer", command=bring_down_a_layer)
+
     return RightClickMenu
 
 def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widgets=False):
@@ -376,7 +373,7 @@ def save_logic():
 
 def duplicate_current_widget():
     global current_widget
-    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command"))
+    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command_name"))
 
 def edit_widget_attributes(widget):
     try:
@@ -444,7 +441,7 @@ def save_project(args=None):
         for active_widget in active_widgets:
             save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
             try:
-                save.append(active_widget["command"])
+                save.append(active_widget["command_name"])
             except KeyError:
                 pass
             data_to_save.append(save)
@@ -484,7 +481,7 @@ def open_project(args=None):
                     if(len(item) == 4):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
                     else:
-                        item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command": item[4]}
+                        item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command_name": item[4]}
                     if("font" in item_dict["kwargs"]):
                         item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
                     create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)        

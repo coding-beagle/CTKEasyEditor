@@ -1,7 +1,6 @@
 import shutil
 from icecream import ic
 
-
 class BoilerPlateHandler():
     def __init__(self):
         self.preferences = {}
@@ -35,7 +34,7 @@ class BoilerPlateHandler():
     def check_for_commands(self, active_widgets_list):  # this flag determines whether or not we need to write out the functions for the command of buttons
         for active_widget in active_widgets_list:
             try:
-                if('command' in active_widget):
+                if('command_name' in active_widget):
                     self.need_commands = True
                     return
             except KeyError:
@@ -47,8 +46,8 @@ class BoilerPlateHandler():
         text = ''
         if(self.need_commands):
             for active_widget in active_widgets_list:
-                if("command" in active_widget):
-                    command_to_write = active_widget.get("command")
+                if("command_name" in active_widget):
+                    command_to_write = active_widget.get("command_name")
                     command_to_write = command_to_write.replace(" ", "_")
                 else:
                     command_to_write = None
@@ -163,8 +162,8 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
             widget_type = 'CTkLabel'
             arguments += ',text=""'
         
-        if("command" in widget):
-            widget_command = widget.get('command').replace(' ', '_')
+        if("command_name" in widget):
+            widget_command = widget.get('command_name').replace(' ', '_')
         else:
             widget_command = None
 
