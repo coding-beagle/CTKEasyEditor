@@ -489,6 +489,16 @@ def open_project(args=None):
     else:
         return    
 
+def validate(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
+        if value_if_allowed:
+            try:
+                float(value_if_allowed)
+                return True
+            except ValueError:
+                return False
+        else:
+            return False
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -527,15 +537,17 @@ label_window_settings.pack(anchor="w", padx=15)
 
 frame_window_settings = ctk.CTkFrame(editor_window, width=380, height=140)
 
+vcmd = (editor_window.register(validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+
 label_entry_width = ctk.CTkLabel(frame_window_settings, text="px")
 label_entry_width.place(x=200, y=10)
 label_left_entry_width = ctk.CTkLabel(frame_window_settings, text="Width")
 label_left_entry_width.place(x=10, y=10)
-entry_width = ctk.CTkEntry(frame_window_settings, placeholder_text = "Width of Window")
+entry_width = ctk.CTkEntry(frame_window_settings,placeholder_text = "Width of Window", validate = 'key', validatecommand=vcmd)
 entry_width.place(x=55, y=10)
 entry_width.insert(0, 500)
 
-entry_height = ctk.CTkEntry(frame_window_settings, placeholder_text= "Height of Window")
+entry_height = ctk.CTkEntry(frame_window_settings, placeholder_text= "Height of Window", validate = 'key', validatecommand=vcmd)
 entry_height.place(x=55, y=40)
 label_left_entry_height = ctk.CTkLabel(frame_window_settings, text="Height")
 label_left_entry_height.place(x=10, y=40)
