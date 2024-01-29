@@ -228,7 +228,7 @@ def move_widget_up_in_frame(widget):
         widget_index += 1
     if(widget_index != 0):
         active_widgets[widget_index], active_widgets[widget_index - 1] = active_widgets[widget_index - 1], active_widgets[widget_index]
-    frame_widgets.update_grid(active_widgets)
+        frame_widgets.swap_widget_from_to(widget_index-1, widget_index)
     set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
@@ -242,7 +242,7 @@ def move_widget_down_in_frame(widget):
         widget_index += 1
     if(widget_index != len(active_widgets)- 1):
         active_widgets[widget_index], active_widgets[widget_index + 1] = active_widgets[widget_index + 1], active_widgets[widget_index]
-    frame_widgets.update_grid(active_widgets)
+        frame_widgets.swap_widget_from_to(widget_index+1, widget_index)
     set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
@@ -469,7 +469,6 @@ def open_project(args=None):
                     item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
                     if("font" in item_dict["kwargs"]):
                         item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
-                        ic(item_dict["kwargs"])
                     create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)
     else:
         return    

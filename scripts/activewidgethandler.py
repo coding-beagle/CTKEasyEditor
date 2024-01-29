@@ -81,6 +81,9 @@ class WidgetName(ctk.CTkFrame):
             self.button_top_level_error.pack(pady=(0,20))
 
         self.entry.configure(state="disabled")
+    
+    def get_widget(self):
+        return self.widget_ref
 
 
 class WidgetHandler(ctk.CTkScrollableFrame):
@@ -95,28 +98,38 @@ class WidgetHandler(ctk.CTkScrollableFrame):
     def add_widget(self, widget, edit_cb, delete_cb, name_change_cb, move_up_cb, move_down_cb):
         self.widget_data_dict = {"widget": widget,  "edit_cb": edit_cb, "delete_cb": delete_cb, "name_change_cb": name_change_cb, "move_up": move_up_cb, "move_down": move_down_cb}
         self.active_widgets.append(self.widget_data_dict)
-        self.update_grid()
+        new_widget = WidgetName(self, height=30,width=300,widget=widget, edit_button_cb=edit_cb, delete_button_cb=delete_cb, name_change_cb=name_change_cb, move_up_cb=move_up_cb,move_down_cb=move_down_cb)
+        self.active_row_widgets.append(new_widget)
+        new_widget.grid(row=len(self.active_widgets), sticky='ew')
 
-    def update_grid(self, active_widgets=[]):
+    def update_grid(self):   # redraws the entire grid
+        self.active_row_widgets = []
+        self.active_widgets = []
         self.clear_grid()
-        if(active_widgets):
-            order = [item['widget'] for item in active_widgets]
-            self.active_widgets.sort(key=lambda x: order.index(x['widget']['widget']))
         for index,widget in enumerate(self.active_widgets):
             self.name = WidgetName(self, height=30,width=300,widget=widget.get("widget"), edit_button_cb=widget.get('edit_cb'), delete_button_cb=widget.get('delete_cb'), name_change_cb=widget.get("name_change_cb"), move_up_cb=widget.get("move_up"),move_down_cb=widget.get("move_down"))
-            self.name.grid(row=index, stick='ew')
-            self.active_row_widgets.append(self.name)
+            self.name.grid(row=index, sticky='ew')
+            self.active_row_widgets.append((self.name))
     
     def clear_grid(self):
-        for active_row in self.active_row_widgets:
-            active_row.destroy()
+        for index, widget in enumerate(self.active_row_widgets):
+            self.active_row_widgets.pop(index)
+            widget.destroy()
 
     def remove_widget(self, widget):
-        for index, active_widget in enumerate(self.active_widgets):
-            if(widget == active_widget.get('widget').get('widget')):
-                self.active_widgets.pop(index)
-                break
-        self.update_grid()
+        for index, row_widget in enumerate(self.active_row_widgets):
+            if(row_widget.get_widget()["widget"] == widget):
+                self.active_row_widgets[index].destroy()
+                self.active_row_widgets.pop(index)
+                return
+
+    def swap_widget_from_to(self, from_index, to_index):
+        self.active_row_widgets[from_index].forget()
+        self.active_row_widgets[to_index].forget()
+        self.active_row_widgets[to_index].grid(row=from_index, sticky='ew')
+        self.active_row_widgets[from_index].grid(row=to_index, sticky='ew')
+        self.active_row_widgets[from_index], self.active_row_widgets[to_index] = self.active_row_widgets[to_index], self.active_row_widgets[from_index]
+        
 
     def check_widget(self, widget):
         output = False
