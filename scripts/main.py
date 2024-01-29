@@ -465,10 +465,12 @@ def open_project(args=None):
                 frame_widgets.clear_grid()
 
                 width, height = new_data[1].split("(")[1].split(")")[0].split('x')      # dealing with window settings data
-                entry_width.delete(0, tk.END)
+                entry_width.delete(0, (len(str(width)) -1 ))
                 entry_width.insert(0, int(width))
-                entry_height.delete(0, tk.END)
+                entry_width.delete(len(str(entry_width.get())) - 1, tk.END)
+                entry_height.delete(0, (len(str(height)) -1 ))
                 entry_height.insert(0, int(height))
+                entry_height.delete(len(str(entry_height.get())) - 1, tk.END)
 
                 title, theme = new_data[1].split("title of ")[1].split(', and has a theme of ')
                 entry_name.delete(0, tk.END)
@@ -492,7 +494,7 @@ def open_project(args=None):
 def validate(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
         if value_if_allowed:
             try:
-                float(value_if_allowed)
+                int(value_if_allowed)
                 return True
             except ValueError:
                 return False

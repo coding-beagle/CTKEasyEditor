@@ -69,7 +69,6 @@ class BoilerPlateHandler():
     def basic_app_window(self,size_x, size_y, icon_path, output_src, title="app", theme='blue', active_widgets_list=[]):
         if(title == ''): title = self.root
         callbacks = self.write_callbacks(active_widgets_list)
-        ic(callbacks)
         self.callback_text = f"\n{callbacks}\n"
         if(self.export_oop):
             text = f"""
