@@ -46,7 +46,7 @@ class BoilerPlateHandler():
         text = ''
         if(self.need_commands):
             for active_widget in active_widgets_list:
-                if("command_name" in active_widget):
+                if("command_name" in active_widget and active_widget["command_name"] is not None):
                     command_to_write = active_widget.get("command_name")
                     command_to_write = command_to_write.replace(" ", "_")
                 else:
@@ -161,7 +161,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
             widget_type = 'CTkLabel'
             arguments += ',text=""'
         
-        if("command_name" in widget):
+        if("command_name" in widget and widget["command_name"] is not None):
             widget_command = widget.get('command_name').replace(' ', '_')
         else:
             widget_command = None
