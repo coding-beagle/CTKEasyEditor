@@ -1,3 +1,9 @@
+**29-01-2024**
+
+Completed:
+
+- Active Widget Handler optimised
+
 **28-01-2024**
 
 Todo:

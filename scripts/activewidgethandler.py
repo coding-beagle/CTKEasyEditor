@@ -102,19 +102,19 @@ class WidgetHandler(ctk.CTkScrollableFrame):
         self.active_row_widgets.append(new_widget)
         new_widget.grid(row=len(self.active_widgets), sticky='ew')
 
-    def update_grid(self):   # redraws the entire grid
-        self.active_row_widgets = []
-        self.active_widgets = []
-        self.clear_grid()
-        for index,widget in enumerate(self.active_widgets):
-            self.name = WidgetName(self, height=30,width=300,widget=widget.get("widget"), edit_button_cb=widget.get('edit_cb'), delete_button_cb=widget.get('delete_cb'), name_change_cb=widget.get("name_change_cb"), move_up_cb=widget.get("move_up"),move_down_cb=widget.get("move_down"))
-            self.name.grid(row=index, sticky='ew')
-            self.active_row_widgets.append((self.name))
+    # def update_grid(self):   # redraws the entire grid
+    #     self.active_row_widgets = []
+    #     self.clear_grid()
+    #     for index,widget in enumerate(self.active_widgets):
+    #         self.name = WidgetName(self, height=30,width=300,widget=widget.get("widget"), edit_button_cb=widget.get('edit_cb'), delete_button_cb=widget.get('delete_cb'), name_change_cb=widget.get("name_change_cb"), move_up_cb=widget.get("move_up"),move_down_cb=widget.get("move_down"))
+    #         self.name.grid(row=index, sticky='ew')
+    #         self.active_row_widgets.append((self.name))
     
     def clear_grid(self):
-        for index, widget in enumerate(self.active_row_widgets):
-            self.active_row_widgets.pop(index)
+        for widget in self.active_row_widgets:
             widget.destroy()
+        self.active_row_widgets = []
+        self.active_widgets = []
 
     def remove_widget(self, widget):
         for index, row_widget in enumerate(self.active_row_widgets):
@@ -124,10 +124,10 @@ class WidgetHandler(ctk.CTkScrollableFrame):
                 return
 
     def swap_widget_from_to(self, from_index, to_index):
-        self.active_row_widgets[from_index].forget()
-        self.active_row_widgets[to_index].forget()
-        self.active_row_widgets[to_index].grid(row=from_index, sticky='ew')
+        # self.active_row_widgets[from_index].forget()
+        # self.active_row_widgets[to_index].forget()
         self.active_row_widgets[from_index].grid(row=to_index, sticky='ew')
+        self.active_row_widgets[to_index].grid(row=from_index, sticky='ew')
         self.active_row_widgets[from_index], self.active_row_widgets[to_index] = self.active_row_widgets[to_index], self.active_row_widgets[from_index]
         
 
