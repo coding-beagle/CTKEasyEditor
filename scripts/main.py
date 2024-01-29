@@ -467,6 +467,9 @@ def open_project(args=None):
 
                 for item in new_data[3:]: # rest of data is widgets
                     item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
+                    if("font" in item_dict["kwargs"]):
+                        item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
+                        ic(item_dict["kwargs"])
                     create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)
     else:
         return    
