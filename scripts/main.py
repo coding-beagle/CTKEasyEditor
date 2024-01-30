@@ -226,7 +226,6 @@ def move_widget_up_in_frame(widget):
         active_widgets[widget_index], active_widgets[widget_index - 1] = active_widgets[widget_index - 1], active_widgets[widget_index]
         frame_widgets.swap_widget_from_to(widget_index, widget_index-1)
     set_theme_to_user_theme()
-    ic("Passed Swapping Point")
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
 def move_widget_down_in_frame(widget):
