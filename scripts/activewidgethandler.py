@@ -124,8 +124,6 @@ class WidgetHandler(ctk.CTkScrollableFrame):
                 return
 
     def swap_widget_from_to(self, from_index, to_index):
-        # self.active_row_widgets[from_index].forget()
-        # self.active_row_widgets[to_index].forget()
         self.active_row_widgets[from_index].grid(row=to_index, sticky='ew')
         self.active_row_widgets[to_index].grid(row=from_index, sticky='ew')
         self.active_row_widgets[from_index], self.active_row_widgets[to_index] = self.active_row_widgets[to_index], self.active_row_widgets[from_index]

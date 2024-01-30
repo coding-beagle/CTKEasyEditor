@@ -70,15 +70,27 @@ class AttributeEditorWindow(ctk.CTkFrame):
                 self.property_entries[key]["entry"].select()
             
      
-        if("command_name" in self.widget_being_edited):
+        if("command_name" in self.widget_being_edited and self.widget_being_edited["command_name"] is not None):
             self.property_entries["command_name"]["entry"].insert(0, str(self.widget_being_edited["command_name"]))
+        
+        if("image_path" in self.widget_being_edited):
+            self.property_entries["image_path"]["entry"].insert(0, str(self.widget_being_edited["image_path"]))
+            im_x, im_y = self.widget_being_edited["image_size"]
+            self.property_entries["image_size_x"]["entry"].insert(0, im_x)
+            self.property_entries["image_size_y"]["entry"].insert(0, im_y)
         
 
     def update_attributes(self):
         kwargs = {}
         for prop, info in self.property_entries.items():
             if(prop == "image_path"):   # rework this?
-                value = self.image_sel.get_path()
+                if(info["entry"].get() != ""):
+                    self.widget_being_edited["image_path"] = self.image_sel.get_path()
+                    continue
+            elif(prop == "image_size_x" or prop == "image_size_y"):
+                if(self.entry_image_size_x.get() != '' and self.entry_image_size_y.get() != ''):
+                    self.widget_being_edited["image_size"] = (int(self.entry_image_size_x.get()), int(self.entry_image_size_y.get()))
+                    continue
             elif(prop == "font"):
                 value = ("roboto", info["entry"].get())
             else:
@@ -265,7 +277,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
             self.label_image_size_y_px = ctk.CTkLabel(self.frame_image_adjustments, text="px")
             self.label_image_size_y_px.place(x=260, y=55)
 
-            self.property_entries["image_path"] = {"entry": self.image_sel.get_entry_element, "type": str}
+            self.property_entries["image_path"] = {"entry": self.image_sel.get_entry_element(), "type": str}
             self.property_entries["image_size_x"] = {"entry": self.entry_image_size_x, "type": int}
             self.property_entries["image_size_y"] = {"entry": self.entry_image_size_y, "type": int}
 

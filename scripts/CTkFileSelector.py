@@ -17,6 +17,7 @@ class CTkFileSelector(ctk.CTkFrame):
         self.currdir = os.getcwd()
         self.path = filedialog.askopenfile(initialdir=self.currdir)
         if(self.path is not None):
+            self.entry_file_path.delete(0, "end")
             self.entry_file_path.insert(0, str(self.path.name))
     
     def get_path(self):

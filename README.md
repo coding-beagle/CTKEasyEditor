@@ -23,9 +23,11 @@ Navigate to scripts, e.g.
 $ cd ctkeasyeditor
 ```
 
-Recommended: start a new python virtual environment in this directory:
+Recommended: start a new python virtual environment in the scripts directory:
+Depending on your IDE (i.e. vscode) you might need to set the venv manually
 
 ```
+$ cd scripts
 $ python -m venv venv
 $ venv/scripts/activate.ps1
 ```
@@ -36,10 +38,9 @@ Install the required packages:
 $ pip install -r requirements.txt
 ```
 
-Navigate to scripts and run main.py
+Finally run main.py
 
 ```
-$ cd scripts
 $ python main.py
 ```
 

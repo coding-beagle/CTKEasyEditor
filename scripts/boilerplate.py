@@ -1,4 +1,5 @@
 import shutil
+import os
 from icecream import ic
 
 class BoilerPlateHandler():
@@ -25,7 +26,7 @@ class BoilerPlateHandler():
             self.need_images = True
             return
         for active_widget in active_widgets_list:
-            if("image_path" in active_widget.get("kwargs")):
+            if("image_path" in active_widget):
                 self.need_images = True
                 return
         else:
@@ -62,7 +63,7 @@ class BoilerPlateHandler():
     def imports(self):
         text = f"import customtkinter as {self.ctk_module}\n"
         if(self.need_images):
-            text += f"from PIL import ImageTk, Image\n"     # probably a smart way of detecting whether or not images exist
+            text += f"from PIL import ImageTk, Image\n"     
         text += f"import tkinter as {self.tk_module}\n"
         return text
 
@@ -107,7 +108,10 @@ class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callb
         if(icon_path):
             filename = icon_path.split("/")[-1]
             try:
-                shutil.copyfile(icon_path, f"{output_src}/{filename}")
+                shutil.copyfile(icon_path, f"{output_src}/assets/{filename}")
+            except FileNotFoundError:
+                os.makedirs(f"{output_src}/assets")
+                shutil.copyfile(icon_path, f"{output_src}/assets/{filename}")
             except shutil.SameFileError:
                 pass    # file exists in directory where we're trying to write to, so we don't care
             text += f"""
@@ -126,14 +130,13 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
         self.image_exists = False
 
         widget_name = widget.get("widget_id")
-        widget_name = widget_name.replace(" ", "_") 
+        widget_name = widget_name.replace(" ", "_")
+
+        if("image_path" in widget):
+            self.image_exists = True
+            arguments += f",image={'self.' if self.export_oop else ''}image_{widget_name}"
 
         for key, arg in kwargs.items():
-            if(key == "image_path" or key == "image_size_x" or key == "image_size_y"):
-                self.image_exists = True
-                if(arguments.find(",image=") == -1):
-                    arguments += f",image={'self.' if self.export_oop else ''}image_{widget_name}"
-                continue
             arguments += ","
             arguments += str(key)
             arguments += "="
@@ -143,13 +146,17 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
                 arguments += str(arg)
 
         if(self.image_exists):
-            image_path = kwargs.get('image_path')
+            image_path = widget["image_path"]
             filename = image_path.split("/")[-1]
+            im_x, im_y = widget["image_size"]
             try:
-                shutil.copyfile(image_path, f"{output_src}/{filename}")
+                shutil.copyfile(image_path, f"{output_src}/assets/{filename}")     # copy image file to new directory
+            except FileNotFoundError: # assets folder doesn't exist, so we make one
+                os.makedirs(f"{output_src}/assets")
+                shutil.copyfile(image_path, f"{output_src}/assets/{filename}") 
             except shutil.SameFileError:
                 pass
-            text += f"\n{'        self.' if self.export_oop else ''}image_{widget_name} = {self.ctk_module}.CTkImage(dark_image=Image.open('{output_src}/{filename}'), size=({kwargs.get('image_size_x')}, {kwargs.get('image_size_y')}))"
+            text += f"\n{'        self.' if self.export_oop else ''}image_{widget_name} = {self.ctk_module}.CTkImage(dark_image=Image.open('{output_src}/assets/{filename}'), size=({im_x}, {im_y}))"
 
         if(self.export_oop):
             arguments = arguments.replace( f"master={self.root}", "self")

@@ -102,35 +102,19 @@ def on_drag_start(event):
 # if it's x position is different by 20 pixels, same with y
 # it achieves that through some black magic codde
 def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y):
-    # global label_snap_lines_vertical, label_snap_lines_horizontal
-    # app_height = app.winfo_height()
-    # app_width = app.winfo_width()
-
-    # snap_lines_img_vertical = Image.new(mode = "RGBA", size = (1, 40), color=(0,0,0,128))
-    # draw = ImageDraw.Draw(snap_lines_img_vertical)
-    # draw.line([0, 0, 0, 40], (0,235,255,200), 1)
-
-    # snap_lines_img_horizontal = Image.new(mode = "RGBA", size = (40, 1), color=(0,0,0,128))
-    # draw2 = ImageDraw.Draw(snap_lines_img_horizontal)
-    # draw2.line([0, 0, 40, 0], (0,235,255,200), 1)
-
-    # image_vert = ctk.CTkImage(dark_image=snap_lines_img_vertical, size=(1,40))
-    # image_horizontal = ctk.CTkImage(dark_image=snap_lines_img_vertical, size=(40,1))
-    
-    # label_snap_lines_horizontal = ctk.CTkLabel(widget, width=40, height=1, text='', image=image_horizontal)
-    # label_snap_lines_vertical = ctk.CTkLabel(widget, width=1, height=40, text='', image=image_vert)
     
     for active_widget in active_widgets:
         if(widget == active_widget.get("widget")): continue
         else:
             active_widget_x_midpoint, active_widget_y_midpoint = active_widget.get("location")
             active_widget_x_midpoint += active_widget.get("widget").winfo_width() / 2
-            if(test_x):
-                if(abs(widget_x_mid - active_widget_x_midpoint)) < 10:
-                    return active_widget_x_midpoint - active_widget.get("widget").winfo_width()/2
-            else:
-                if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
-                    return active_widget_y_midpoint
+            if(not keyboard.is_pressed("shift")):
+                if(test_x):
+                    if(abs(widget_x_mid - active_widget_x_midpoint)) < 10:
+                        return active_widget_x_midpoint - active_widget.get("widget").winfo_width()/2
+                else:
+                    if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
+                        return active_widget_y_midpoint
                 
     if(test_x): # testing for app center line
         if(abs(widget_x_mid - app.winfo_width()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
@@ -146,8 +130,8 @@ def on_drag_motion(event):
     x = widget.winfo_x() - widget._drag_start_x + event.x
     y = widget.winfo_y() - widget._drag_start_y + event.y
 
-    widget_x_midpoint = widget.winfo_x() + widget_half_width - widget._drag_start_x + event.x
-    widget_y_midpoint = widget.winfo_y() + widget_half_height - widget._drag_start_y + event.y
+    widget_x_midpoint = x + widget_half_width 
+    widget_y_midpoint = y + widget_half_height
 
     if(check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, True, widget_half_width,widget_half_height) and not(keyboard.is_pressed("ctrl"))): # snapping x
         x = check_other_widgets(widget_x_midpoint, widget_y_midpoint, widget, True, widget_half_width,widget_half_height)
@@ -280,11 +264,17 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
             created_widget["location"] = (location_x+10, location_y+10)
             created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
             created_widget["command_name"] = widget_command
+            if("image" in widget_to_duplicate):
+                created_widget["image_path"] = widget_to_duplicate["image_path"]
+                created_widget["image_size"] = widget_to_duplicate["image_size"]
             edit_widget_attributes(created_widget)
         if(from_file):
             created_widget["location"] = from_file_dict["location"]
-            created_widget["kwargs"] = from_file_dict["kwargs"]   # this is needed because image is part of kwargs for some reason
+            created_widget["kwargs"] = from_file_dict["kwargs"]
             created_widget["widget_id"] = from_file_dict["widget_id"]
+            if("image_path" in from_file_dict):
+                created_widget["image_path"] = from_file_dict["image_path"]
+                created_widget["image_size"] = from_file_dict["image_size"]
             if("command_name" in from_file_dict):
                 created_widget["command_name"] = from_file_dict["command_name"]
             edit_widget_attributes(created_widget)
@@ -322,6 +312,9 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
         if(new_canvas):
             kwargs = widget.get('kwargs')
             widget['widget'] = widget_types.get((widget.get('widget_name')))(new_canvas, **kwargs)
+            if('image' in widget):
+                widget['widget'].configure(image=widget["image"])
+
             widget['has_bindings'] = False
             widget.get('widget').unbind("<Button-3>")
             widget.get('widget').unbind("<Button-1>")
@@ -376,13 +369,13 @@ def duplicate_current_widget():
     create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command_name"))
 
 def edit_widget_attributes(widget):
-    try:
-        properties = widget.get("kwargs")
-        widget.get("widget").configure(**properties)
-    except ValueError:
-        if(widget.get("kwargs").get("image_path")):
-            image = ctk.CTkImage(dark_image=Image.open(widget.get("kwargs").get("image_path")), size=(widget.get("kwargs").get("image_size_x"), widget.get("kwargs").get("image_size_y")))
-            widget.get("widget").configure(image=image)
+    properties = widget.get("kwargs")
+    widget.get("widget").configure(**properties)
+    
+    if(widget.get("image_path") is not None):
+        image = ctk.CTkImage(dark_image=Image.open(widget.get("image_path")), size=(widget.get("image_size")))
+        widget["image"] = image 
+        widget["widget"].configure(image=image)
 
 def open_editor_window(widget):
     ctk.set_default_color_theme('blue')
@@ -436,14 +429,17 @@ def save_project(args=None):
 
     with open(f"{save_path}", "w") as write_file:
         data_to_save = ["This is some data regarding a custom tkinter application"]
-        data_to_save.append(f"The file has dimensions of ({entry_width.get()}x{entry_height.get()}) and a title of {entry_name.get()}, and has a theme of {combo_theme_selector.get()}")
+        data_to_save.append(f"The file has dimensions of ({entry_width.get()}x{entry_height.get()}) and a title of {entry_name.get()}, and has a theme of {combo_theme_selector.get()}. It has an icon path of {file_selector.get_path()}")
         data_to_save.append(file_selector.get_path())
         for active_widget in active_widgets:
             save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
-            try:
+            if("command_name" in active_widget):
                 save.append(active_widget["command_name"])
-            except KeyError:
-                pass
+            else:
+                save.append(None)
+            if("image_path" in active_widget):
+                save.append(active_widget["image_path"])
+                save.append(active_widget["image_size"])
             data_to_save.append(save)
         json.dump(data_to_save, write_file, indent=2)
 
@@ -472,18 +468,29 @@ def open_project(args=None):
                 entry_height.insert(0, int(height))
                 entry_height.delete(len(str(entry_height.get())) - 1, tk.END)
 
+                   
                 title, theme = new_data[1].split("title of ")[1].split(', and has a theme of ')
+                theme = theme.split(".")[0]
                 entry_name.delete(0, tk.END)
                 entry_name.insert(0, title)
                 combo_theme_selector.set(theme)
+                ico_path = new_data[1].split("path of ")[1]
+                try:
+                    if(ico_path != ""):
+                        file_selector.get_entry_element().delete(0, tk.END)
+                        file_selector.get_entry_element().insert(0, ico_path)
+                except IndexError:  # backwards compatibility
+                    pass
 
                 apply_window_settings()         # deal with themes
 
                 for item in new_data[3:]: # rest of data is widgets
                     if(len(item) == 4):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
-                    else:
+                    elif(len(item)==5):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command_name": item[4]}
+                    else:
+                        item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command_name": item[4], "image_path": item[5], "image_size": tuple(item[6])}
                     if("font" in item_dict["kwargs"]):
                         item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
                     create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)        
