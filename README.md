@@ -11,38 +11,13 @@ The original documentation on CustomTkinter is excellent, and I recommend it for
 
 ![Alt text](/screenshots/ss1.png "Example Screenshot")
 
-To install and run (assuming you have git and pip):
+Files (Windows Only (I can't figure out how to freeze to mac format)):
+[DownloadExe](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/installer-windows/CTkEasyEditor-1.0-win64.msi)
+[DownloadZip](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/zip-windows/ctkeasyeditor.zip)
 
-```
-$ git clone https://github.com/coding-beagle/ctkeasyeditor.git
-```
+Other platforms must donwload and run python code yourself (I can't figure out cx_freeze):
 
-Navigate to scripts, e.g.
-
-```
-$ cd ctkeasyeditor
-```
-
-Recommended: start a new python virtual environment in the scripts directory:
-Depending on your IDE (i.e. vscode) you might need to set the venv manually
-
-```
-$ cd scripts
-$ python -m venv venv
-$ venv/scripts/activate.ps1
-```
-
-Install the required packages:
-
-```
-$ pip install -r requirements.txt
-```
-
-Finally run main.py
-
-```
-$ python main.py
-```
+[Advanced Install Instructions](documentation\install.md)
 
 Example Usage:
 
