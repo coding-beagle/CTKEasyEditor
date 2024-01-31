@@ -361,7 +361,6 @@ def generate_file(path, export_preferences):
     except:
         CTkError(error_message=f"Error occured: {Exception}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
 
-
 def save_logic():
     global export_preferences
     curr_dir = os.getcwd()
