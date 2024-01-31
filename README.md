@@ -11,6 +11,8 @@ The original documentation on CustomTkinter is excellent, and I recommend it for
 
 ![Alt text](/screenshots/ss1.png "Example Screenshot")
 
+Zip and Installer should be the most recent stable release, the python scripts are the most recent experimental releases.
+
 Files, Windows Only (I can't figure out how to freeze to mac format). Just click on links and then press download:
 
 - [Download Installer](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/installer-windows/CTkEasyEditor-1.0-win64.msi)
@@ -39,7 +41,7 @@ Right now it seems to work okay, and the current implementation includes:
 To be implemented soon:
 
 - Custom Theme Support
-- Performance Optimisations
+- Some widgets don't play nice currently, namely CTkScrollableFrame, CTkTreeView and CTkSegmentedButton. I'll add these when I can get them to a stable version and playing nice.
 
 Hotkeys & Shortcuts:
 
@@ -51,5 +53,3 @@ Hotkeys & Shortcuts:
 - The standard save, save as and open hotkeys, i.e. ctrl+s, ctrl+shift+s, ctrl+o, etc
 
 Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
-
-I will add an installer and freeze this into a .exe when I get the tool up to a state when I am happy.
