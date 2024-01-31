@@ -11,7 +11,7 @@ The original documentation on CustomTkinter is excellent, and I recommend it for
 
 ![Alt text](/screenshots/ss1.png "Example Screenshot")
 
-Files (Windows Only (I can't figure out how to freeze to mac format)):
+Files, Windows Only (I can't figure out how to freeze to mac format). Just click on links and then press download:
 
 - [Download Installer](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/installer-windows/CTkEasyEditor-1.0-win64.msi)
 
