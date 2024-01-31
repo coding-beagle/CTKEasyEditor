@@ -67,8 +67,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
             if(isinstance(self.property_entries[key]["entry"], ctk.CTkEntry)):
                 self.property_entries[key]["entry"].insert(0, value)
             elif(isinstance(self.property_entries[key]["entry"], ctk.CTkCheckBox)):
-                self.property_entries[key]["entry"].select()
-            
+                if(value):
+                    self.property_entries[key]["entry"].select()
      
         if("command_name" in self.widget_being_edited and self.widget_being_edited["command_name"] is not None):
             self.property_entries["command_name"]["entry"].insert(0, str(self.widget_being_edited["command_name"]))
@@ -95,21 +95,20 @@ class AttributeEditorWindow(ctk.CTkFrame):
                 value = ("roboto", info["entry"].get())
             else:
                 value = info["entry"].get()
-            if info["type"] == int and value.isdigit():
-                kwargs[prop] = int(value)
-            elif info["type"] == str and value or prop=="show":
-                kwargs[prop] = str(value)
-            elif info["type"] == bool:
-                kwargs[prop] = bool(value)
-            elif info["type"] == tuple and value[0] and value[1]:
-                kwargs[prop] = (str(value[0]), -int(value[1]))
+                if info["type"] == int and value.isdigit():
+                    kwargs[prop] = int(value)
+                elif info["type"] == str and value or prop=="show":
+                    kwargs[prop] = str(value)
+                elif info["type"] == bool:
+                    kwargs[prop] = bool(value)
+                elif info["type"] == tuple and value[0] and value[1]:
+                    kwargs[prop] = (str(value[0]), -int(value[1]))
         # Update widget properties only if there are valid changes
         if "command_name" in kwargs:
             self.widget_being_edited["command_name"] = kwargs["command_name"]
             kwargs.pop("command_name")       # we don't actually want to attach the callback for the widget in our editor window
         if kwargs:
             self.widget_being_edited["kwargs"] = kwargs
-        
 
         self.cb_to_apply(self.widget_being_edited)
     

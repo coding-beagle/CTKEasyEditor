@@ -85,12 +85,15 @@ class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callb
             if(icon_path):
                 filename = icon_path.split("/")[-1]
                 try:
-                    shutil.copyfile(icon_path, f"{output_src}/{filename}")
+                    shutil.copyfile(icon_path, f"{output_src}/assets/{filename}")
+                except FileNotFoundError:
+                    os.makedirs(f"{output_src}/assets")
+                    shutil.copyfile(icon_path, f"{output_src}/assets/{filename}")
                 except shutil.SameFileError:
                     pass    # file exists in directory where we're trying to write to, so we don't care
                 text += f"""
         ## Icon gets set here        
-        self.icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
+        self.icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
         self.wm_iconbitmap()
         self.iconphoto(True, self.icon_path)"""
             return f"{text}\n"
@@ -116,7 +119,7 @@ class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callb
                 pass    # file exists in directory where we're trying to write to, so we don't care
             text += f"""
 ## Icon gets set here        
-icon_path = ImageTk.PhotoImage(file="{output_src}/{filename}")
+icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
 {self.root}.wm_iconbitmap()
 {self.root}.iconphoto(True, icon_path)"""
         return text + "\n"

@@ -1,3 +1,14 @@
+**30-01-2024**
+
+Bugs:
+
+-
+
+Completed:
+
+- Refactored how widgets handle images
+- Subsequently fixed shifting layer of images
+
 **29-01-2024**
 
 Completed:

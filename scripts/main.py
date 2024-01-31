@@ -329,33 +329,38 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
         add_bindings(draw=False, updated_menu=right_click_menu)
         
 def generate_file(path, export_preferences):
-    with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
-        boiler_handler = BoilerPlateHandler()
-        boiler_handler.set_preferences(export_preferences)
-        app_height = entry_height.get()
-        app_width = entry_width.get()
-        
-        boiler_handler.check_for_images(active_widgets, file_selector.get_path())
-        boiler_handler.check_for_commands(active_widgets)
+    boiler_handler = BoilerPlateHandler()
+    boiler_handler.set_preferences(export_preferences)
+    app_height = entry_height.get()
+    app_width = entry_width.get()
+    
+    boiler_handler.check_for_images(active_widgets, file_selector.get_path())
+    boiler_handler.check_for_commands(active_widgets)
 
+    file_data = ""
+    try:
         if(app_height != "" and app_width != ""):
-            f.write(boiler_handler.imports())
-            theme = combo_theme_selector.get().lower()
-            theme = theme.replace(" ", "-")
-            f.write(boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get(), theme, active_widgets_list=active_widgets))
+            file_data += boiler_handler.imports()
         else:
             CTkError(editor_window,error_message="App Dimensions Cannot Be Empty!", button_1_text="Okay")
-            try:
-                os.remove(f"{path}/{export_preferences.get('File Name:').get('value')}.py")
-            except FileNotFoundError:
-                pass
-        
+            return
+
+        theme = combo_theme_selector.get().lower()
+        theme = theme.replace(" ", "-")
+
+        file_data += boiler_handler.basic_app_window(app_width, app_height, file_selector.get_path(), path, entry_name.get(), theme, active_widgets_list=active_widgets)
+
         for widget in active_widgets:
-            f.write(str(boiler_handler.widget_code(widget, path)))
+            file_data += (str(boiler_handler.widget_code(widget, path)))
 
-        f.write(boiler_handler.main_loop())
+        file_data += boiler_handler.main_loop()
 
-        CTkError(editor_window,title="Successful!",size_y=140, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
+        with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
+            f.write(file_data)
+            CTkError(editor_window,title="Successful!",size_x= 300,size_y=200, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
+    except:
+        CTkError(error_message=f"Error occured: {Exception}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
+
 
 def save_logic():
     global export_preferences
@@ -370,6 +375,8 @@ def duplicate_current_widget():
 
 def edit_widget_attributes(widget):
     properties = widget.get("kwargs")
+    if("image_path" in properties):
+        properties.pop("image_path")
     widget.get("widget").configure(**properties)
     
     if(widget.get("image_path") is not None):
@@ -424,13 +431,14 @@ def save_as_project(args=None):
         save_project()
 
 def save_project(args=None):
-    if(save_path is None):
+    if(save_path == ""):
         save_as_project()
 
-    with open(f"{save_path}", "w") as write_file:
+    data_to_save = []
+
+    try:
         data_to_save = ["This is some data regarding a custom tkinter application"]
         data_to_save.append(f"The file has dimensions of ({entry_width.get()}x{entry_height.get()}) and a title of {entry_name.get()}, and has a theme of {combo_theme_selector.get()}. It has an icon path of {file_selector.get_path()}")
-        data_to_save.append(file_selector.get_path())
         for active_widget in active_widgets:
             save = [active_widget["widget_name"], active_widget["widget_id"], active_widget["location"], active_widget["kwargs"]]
             if("command_name" in active_widget):
@@ -441,6 +449,11 @@ def save_project(args=None):
                 save.append(active_widget["image_path"])
                 save.append(active_widget["image_size"])
             data_to_save.append(save)
+    except:
+        CTkError(error_message=f"Error occured: {Exception}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
+        return
+    # so we don't overwrite files if the data isn't generated properly
+    with open(f"{save_path}", "w") as write_file:
         json.dump(data_to_save, write_file, indent=2)
 
 def open_project(args=None):
@@ -484,7 +497,7 @@ def open_project(args=None):
 
                 apply_window_settings()         # deal with themes
 
-                for item in new_data[3:]: # rest of data is widgets
+                for item in new_data[2:]: # rest of data is widgets
                     if(len(item) == 4):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
                     elif(len(item)==5):
