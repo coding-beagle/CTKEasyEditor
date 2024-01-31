@@ -1,13 +1,19 @@
 **30-01-2024**
+Todo:
+
+- Refactor settingseditor.py to have more granular control over widget properties
+- Might need to add custom theme support tomorrow
 
 Bugs:
 
--
+- **(Fixed)** First widget was not being loaded on new file
 
 Completed:
 
 - Refactored how widgets handle images
 - Subsequently fixed shifting layer of images
+- Reworked saving and opening file logic, now generates text first and if errors occur we don't write the file.
+- Frozen file and added to .exe
 
 **29-01-2024**
 
