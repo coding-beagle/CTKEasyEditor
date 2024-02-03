@@ -248,9 +248,16 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
     if widget_class is not None:
         location_x, location_y = ((app.winfo_width()-widget_class(app, **kwargs).cget("width"))/2, (app.winfo_height()-widget_class(app, **kwargs).cget("height"))/2) if not duplicate else widget_to_duplicate.get("location")   # if it is duplicated, set the location to middle, otherwise duplicated it on top of the current widget
         number_of_same_widgets = 0
+
+        list_of_widgets_names = []
+        for active_widget in active_widgets:
+            list_of_widgets_names.append(active_widget["widget_id"])
+
         for active_widget in active_widgets:
             if(active_widget.get("widget_type")) == str(widget_class):
                 number_of_same_widgets += 1
+                if(f"{widget_type} {number_of_same_widgets}" not in list_of_widgets_names):
+                    break
         created_widget = {"widget":widget_class(app, **kwargs),
                           "location": (location_x, location_y),
                           "widget_name": str(widget_type),  # todo check why we need this
@@ -279,8 +286,8 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
                 created_widget["command_name"] = from_file_dict["command_name"]
             edit_widget_attributes(created_widget)
     
-    active_widgets.append(created_widget)
-    add_bindings()
+        active_widgets.append(created_widget)
+        add_bindings()
 
 def bring_up_a_layer():
     global current_widget
@@ -314,7 +321,8 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
             widget['widget'] = widget_types.get((widget.get('widget_name')))(new_canvas, **kwargs)
             if('image' in widget):
                 widget['widget'].configure(image=widget["image"])
-
+            if(widget['widget_name'] == "Option Menu"):
+                widget['widget'].configure(state="disabled")
             widget['has_bindings'] = False
             widget.get('widget').unbind("<Button-3>")
             widget.get('widget').unbind("<Button-1>")
@@ -358,8 +366,8 @@ def generate_file(path, export_preferences):
         with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
             f.write(file_data)
             CTkError(editor_window,title="Successful!",size_x= 300,size_y=200, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
-    except:
-        CTkError(error_message=f"Error occured: {Exception}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
+    except Exception as ex:
+        CTkError(editor_window,error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=300)
 
 def save_logic():
     global export_preferences
@@ -375,8 +383,20 @@ def duplicate_current_widget():
 def edit_widget_attributes(widget):
     properties = widget.get("kwargs")
     if("image_path" in properties):
+        widget["image_path"] = properties["image_path"]
         properties.pop("image_path")
-    widget.get("widget").configure(**properties)
+    if("image_height" in properties or "image_width" in properties):
+        widget["image_size"] = (properties["image_width"], properties["image_height"])
+        properties.pop("image_width")
+        properties.pop("image_height")
+    if("command" in properties):
+        widget["command_name"] = properties["command"]
+        properties.pop("command")
+
+    try:
+        widget.get("widget").configure(**properties)
+    except Exception as ex:
+        CTkError(editor_window, error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="Okay", size_x=150, size_y=150)
     
     if(widget.get("image_path") is not None):
         image = ctk.CTkImage(dark_image=Image.open(widget.get("image_path")), size=(widget.get("image_size")))
@@ -389,7 +409,7 @@ def open_editor_window(widget):
     if(attribute_editor_window):
         attribute_editor_window.change_edited_widget(widget)
     else:
-        attribute_editor_window = AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes)
+        attribute_editor_window = AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes, app_pos = (app.winfo_geometry()))
     set_theme_to_user_theme()
 
 def change_widget_id(widget, id):
@@ -428,11 +448,14 @@ def save_as_project(args=None):
         return
     if(save_path != ""):
         save_project()
+    
 
 def save_project(args=None):
     if(save_path == ""):
         save_as_project()
-
+        if(save_path is None):
+            return
+    
     data_to_save = []
 
     try:
@@ -448,8 +471,8 @@ def save_project(args=None):
                 save.append(active_widget["image_path"])
                 save.append(active_widget["image_size"])
             data_to_save.append(save)
-    except:
-        CTkError(error_message=f"Error occured: {Exception}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
+    except Exception as ex:
+        CTkError(error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
         return
     # so we don't overwrite files if the data isn't generated properly
     with open(f"{save_path}", "w") as write_file:

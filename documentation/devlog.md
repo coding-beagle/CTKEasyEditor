@@ -1,3 +1,23 @@
+**03-02-2024**
+Todo:
+
+-Complete documentation
+
+Bugs:
+
+- **(Fixed)** files saving as "None" when no path was selected
+
+Completed:
+- Added all new widget properties
+- Changed widget properties window placement
+
+**02-02-2024**
+Todo:
+- Add all of the new properties to widgets
+
+Completed:
+- Refactored settingseditor.py
+
 **30-01-2024**
 Todo:
 

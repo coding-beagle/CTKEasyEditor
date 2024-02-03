@@ -2,37 +2,98 @@ import customtkinter as ctk
 from CTkFileSelector import *
 from icecream import ic
 from CTkColorPicker import *
+import tkinter as tk
 
 class AttributeEditorWindow(ctk.CTkFrame):
-     
-    attributes = {
-    "Button": ["size_adjustments", "command_options","image_adjustments","text_adjustments"],
-    "Label": ["size_adjustments", "image_adjustments","text_adjustments"],
-    "Text Box": ["size_adjustments", "textbox"], # uncomplete
-    "Check Box": ["size_adjustments", "text_adjustments", "checkbox"],
-    "Combo Box": ["size_adjustments"],
-    "Entry": ["size_adjustments", "placeholder_text"],
-    "Frame": ["size_adjustments"],
-    "Option Menu": ["size_adjustments"],
-    "Progress Bar": ["size_adjustments"],
-    "Radio": ["size_adjustments", "text_adjustments"],
-    # "Scrollable Frame": ["size_adjustments", "scroll_dir"],
-    "Scroll Bar": ["size_adjustments", "scroll_dir"],
-    # "Segment Button": ctk.CTkSegmentedButton,
-    "Slider": ["size_adjustments", "scroll_dir"],
-    "Switch": ["size_adjustments", "text_adjustments", "switch_adjustments"],
-    # "Tab View": ctk.CTkTabview
-    "Image": ["image_adjustments"]
+    editable_attributes = {
+                        "Spacer": None,
+                        "Width": {"type": int, "value": 0,"kwarg":"width", "flags": ["px"]},
+                        "Height": {"type": int, "value": 0, "kwarg":"height", "flags": ["px"]},
+                        "Corner Radius": {"type": int, "value": 0,"kwarg":"corner_radius", "flags": ["px"]},
+                        "Border Width": {"type": int, "value": 0,"kwarg":"border_width", "flags": ["px"]},
+                        "Border Spacing": {"type": int, "value": 0,"kwarg":"border_spacing", "flags": ["px"]},
+                        "Checkbox Width": {"type": int, "value": 0,"kwarg":"checkbox_width", "flags": ["px"]},
+                        "Checkbox Height": {"type": int, "value": 0,"kwarg":"checkbox_height", "flags": ["px"]},
+                        "Switch Width": {"type": int, "value": 0,"kwarg":"switch_width", "flags": ["px"]},
+                        "Switch Height": {"type": int, "value": 0,"kwarg":"switch_height", "flags": ["px"]},
+                        "Radio Width": {"type": int, "value": 0,"kwarg":"radiobutton_width", "flags": ["px"]},
+                        "Radio Height": {"type": int, "value": 0,"kwarg":"radiobutton_height", "flags": ["px"]},
+                        "Border Width Checked": {"type": int, "value": 0,"kwarg":"border_width_checked", "flags": ["px"]},
+                        "Border Width Unchecked": {"type": int, "value": 0,"kwarg":"border_width_unchecked", "flags": ["px"]},
+                        "Minimum Pixel Length": {"type": int, "value": 0,"kwarg":"minimum_pixel_length", "flags": ["px"]},
+                        "Foreground Colour": {"type": int, "value": 0,"kwarg":"fg_color", "flags": ["colour"]},
+                        "Hover Colour": {"type": int, "value": 0,"kwarg":"hover_color", "flags": ["colour"]},
+                        "Border Colour": {"type": int, "value": 0,"kwarg":"border_color", "flags":  ["colour"]},
+                        "Text Colour": {"type": int, "value": 0,"kwarg":"text_color", "flags":  ["colour"]},
+                        "Text Colour Disabled": {"type": int, "value": 0,"kwarg":"text_color_disabled", "flags":  ["colour"]},
+                        "Placeholder Text Colour": {"type": int, "value": 0,"kwarg":"placeholder_text_color", "flags":  ["colour"]},
+                        "Button Colour": {"type": int, "value": 0,"kwarg":"button_color", "flags":  ["colour"]},
+                        "Button Hover Colour": {"type": int, "value": 0,"kwarg":"button_hover_color", "flags":  ["colour"]},
+                        "Scrollbar Button Colour": {"type": int, "value": 0,"kwarg":"scrollbar_button_colour", "flags":  ["colour"]},
+                        "Scrollbar Button Hover Colour": {"type": int, "value": 0,"kwarg":"scrollbar_button_hover_colour", "flags":  ["colour"]},
+                        "Dropdown Foreground Colour": {"type": int, "value": 0,"kwarg":"dropdown_fg_color", "flags":  ["colour"]},
+                        "Dropdown Hover Colour": {"type": int, "value": 0,"kwarg":"dropdown_hover_color", "flags":  ["colour"]},
+                        "Progress Colour": {"type": int, "value": 0,"kwarg":"progress_color", "flags":  ["colour"]},
+                        "Dropdown Text Colour": {"type": int, "value": 0,"kwarg":"dropdown_text_color", "flags":  ["colour"]},
+                        "Disabled Text Colour": {"type": int, "value": 0,"kwarg":"text_color_disabled", "flags":  ["colour"]},
+                        "Text": {"type": str, "kwarg":"text", "value": "","flags": []},
+                        "Placeholder Text": {"type": str, "kwarg":"placeholder_text", "value": "","flags": []},
+                        "Font": {"type": tuple, "value": ("Roboto", 0),"kwarg":"font", "flags": [{"dropdown": ["Roboto", "Comic Sans MS","Calibri", "Roman", "Script", "Courier", "Tekton", "Hobot Std"]}, "px"]},
+                        "Dropdown Font": {"type": tuple, "value": (0,0),"kwarg":"dropdown_font", "flags": [{"dropdown": ["Roboto", "Comic Sans MS","Calibri", "Roman", "Script", "Courier", "Tekton", "Hobot Std"]}, "px"]},
+                        "Callback Name": {"type": str, "value": "","kwarg":"command", "flags":  ["dontupdate"]},
+                        "Image": {"type": str, "value": "","kwarg": "image_path", "flags": ["dontupdate", "image_path"]},
+                        "Image Width": {"type": int, "value": 0,"kwarg":"image_width","flags":["px"]},
+                        "Image Height": {"type": int, "value": 0,"kwarg":"image_height","flags":["px"]},
+                        "Justify": {"type": str, "value": "", "kwarg": "justify", "flags": [{"dropdown": ["left", "center", "right"]}]},
+                        "Compound": {"type": str, "value": "", "kwarg": "compound", "flags": [{"dropdown": ["top", "bottom", "left", "right"]}]},
+                        "Pad X": {"type": int, "value": 0,"kwarg":"padx", "flags": ["px"]},
+                        "Pad Y": {"type": int, "value": 0, "kwarg":"pady", "flags": ["px"]},
+                        "From": {"type": int, "value": 0, "kwarg":"from_", "flags": []},
+                        "To": {"type": int, "value": 0, "kwarg":"to", "flags": []},
+                        "Number of Steps": {"type": int, "value": 0, "kwarg":"number_of_steps", "flags": []},
+                        "Hover": {"type": bool, "value": True, "kwarg":"hover", "flags": []},
+                        "Dynamic Resizing": {"type": bool, "value": True, "kwarg":"dynamic_resizing", "flags": []},
+                        "Activate Scrollbars": {"type": bool, "value": True, "kwarg":"activate_scrollbars", "flags": []},
+                        "Anchor": {"type": str, "value": "", "kwarg": "anchor", "flags": [{"dropdown": ["n", "s", "e", "w","center"]}]},
+                        "Orientation": {"type": str, "value": "", "kwarg": "orientation", "flags": [{"dropdown": ["horizontal", "vertical"]}]},
+                        "Mode": {"type": str, "value": "", "kwarg": "mode", "flags": [{"dropdown": ["determinate", "indeterminate"]}]},
+                        "Text Wrapping": {"type": str, "value": "", "kwarg": "wrap", "flags": [{"dropdown": ["char","word", "none"]}]},
+                        
+                        }
+
+    edit_dict = {
+        "Button": ["Width", "Height", "Corner Radius", "Border Width", "Spacer", "Text", "Font", "Spacer", "Callback Name", "Spacer", "Image", "Image Width", "Image Height", "Spacer", "Foreground Colour","Hover Colour", "Border Colour", "Text Colour", "Spacer"],
+        "Label": ["Width", "Height", "Corner Radius", "Spacer", "Text", "Font", "Spacer", "Image", "Image Width", "Image Height", "Spacer", "Foreground Colour", "Text Colour", "Spacer", "Justify", "Compound", "Spacer","Pad X", "Pad Y", "Spacer"],
+        "Check Box": ["Width", "Height", "Corner Radius", "Border Width", "Spacer", "Text", "Font", "Spacer", "Checkbox Width", "Checkbox Height", "Spacer", "Foreground Colour", "Hover Colour", "Border Colour", "Text Colour", "Spacer"],
+        "Entry": ["Width", "Height", "Corner Radius", "Spacer", "Text","Placeholder Text", "Font", "Spacer", "Foreground Colour", "Text Colour", "Placeholder Text Colour", "Spacer"],
+        "Combo Box": ["Width", "Height", "Corner Radius", "Border Width", "Spacer", "Hover", "Justify","Font", "Spacer", "Foreground Colour", "Border Colour","Text Colour", "Text Colour Disabled", "Button Colour", "Button Hover Colour", "Dropdown Foreground Colour", "Dropdown Hover Colour", "Dropdown Text Colour" ,"Spacer"],
+        "Frame": ["Width", "Height", "Border Width", "Spacer", "Foreground Colour", "Border Colour","Spacer"],
+        "Option Menu": ["Width", "Height", "Corner Radius", "Spacer", "Hover", "Dynamic Resizing", "Anchor","Font", "Spacer", "Callback Name", "Spacer", "Foreground Colour", "Border Colour","Text Colour", "Text Colour Disabled", "Button Colour", "Button Hover Colour", "Dropdown Foreground Colour", "Dropdown Hover Colour", "Dropdown Text Colour","Spacer"],
+        "Progress Bar": ["Width", "Height", "Corner Radius", "Border Width", "Spacer", "Mode", "Foreground Colour", "Border Colour", "Progress Colour","Spacer"],
+        "Radio": ["Width", "Height", "Corner Radius", "Spacer", "Radio Width", "Radio Height", "Border Width Checked", "Border Width Unchecked","Spacer","Text", "Font", "Spacer", "Callback Name","Spacer"],
+        "Image": ["Image", "Image Width", "Image Height", "Spacer"],
+        "Scroll Bar": ["Width", "Height", "Corner Radius", "Border Spacing", "Spacer", "Callback Name", "Hover", "Minimum Pixel Length", "Spacer", "Foreground Colour", "Button Colour", "Button Hover Colour", "Spacer"],
+        "Slider": ["Width", "Height", "Border Width", "Spacer", "Callback Name", "From", "To", "Number of Steps", "Hover", "Spacer", "Foreground Colour", "Progress Colour", "Border Colour", "Button Colour", "Button Hover Colour","Spacer" ],
+        "Switch": ["Width", "Height", "Corner Radius", "Border Width", "Spacer", "Switch Width", "Switch Height", "Callback Name", "Text","Font","Spacer", "Foreground Colour", "Border Colour", "Progress Colour", "Button Colour", "Button Hover Colour", "Hover Colour", "Text Colour","Spacer"],
+        "Text Box": ["Width", "Height", "Corner Radius", "Border Width", "Border Spacing", "Spacer", "Text Wrapping","Font","Spacer", "Foreground Colour", "Border Colour", "Text Colour", "Scrollbar Button Colour", "Scrollbar Button Hover Colour","Spacer"],
     }
 
-    def __init__(self,*args,widget_to_edit,apply_settings_cb,**kwargs):
+    def __init__(self,*args,widget_to_edit,apply_settings_cb, app_pos,**kwargs):
         super().__init__(*args, **kwargs)
         self.widget_being_edited = widget_to_edit
         self.cb_to_apply = apply_settings_cb
 
+        self.app_position = app_pos
+        self.app_geometry = (self.app_position.split("+"))
+        self.app_width, self.app_height = self.app_geometry[0].split("x")
+        self.editor_offset_x = int(self.app_width) + int(self.app_geometry[1])
+        self.editor_offset_y = self.app_geometry[2]
         self.widget_being_edited = widget_to_edit
         self.widget_type = str(widget_to_edit.get("widget_name"))
-        self.attributes_to_edit = self.attributes.get(str(self.widget_type))
+        
+        self.attributes_to_edit = self.edit_dict.get((self.widget_type))
+
+        self.kwarg_list = {}
 
         self.toplevel = ctk.CTkToplevel()
         self.toplevel.attributes('-topmost', 'true')
@@ -53,70 +114,22 @@ class AttributeEditorWindow(ctk.CTkFrame):
         
         self.check_attributes(self.attributes_to_edit)
 
-        editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
-        _, editor_size_y = editor_size.split("x")
-        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")    # ensures the window always gets created below to the editor
+        # editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
+        # _, editor_size_y = editor_size.split("x")
+        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(self.editor_offset_x)+10}+{int(self.editor_offset_y)}")    # ensures the window always gets created below to the editor
     
-        self.populate_existing_fields()
-
-    def populate_existing_fields(self):
-        for key, value in self.widget_being_edited.get("kwargs").items():
-            if(key == "font"):
-                self.property_entries[key]["entry"].insert(0, abs(value[1]))
-                continue
-            if(isinstance(self.property_entries[key]["entry"], ctk.CTkEntry)):
-                self.property_entries[key]["entry"].insert(0, value)
-            elif(isinstance(self.property_entries[key]["entry"], ctk.CTkCheckBox)):
-                if(value):
-                    self.property_entries[key]["entry"].select()
-     
-        if("command_name" in self.widget_being_edited and self.widget_being_edited["command_name"] is not None):
-            self.property_entries["command_name"]["entry"].insert(0, str(self.widget_being_edited["command_name"]))
-        
-        if("image_path" in self.widget_being_edited):
-            self.property_entries["image_path"]["entry"].insert(0, str(self.widget_being_edited["image_path"]))
-            im_x, im_y = self.widget_being_edited["image_size"]
-            self.property_entries["image_size_x"]["entry"].insert(0, im_x)
-            self.property_entries["image_size_y"]["entry"].insert(0, im_y)
-        
-
+        # self.populate_existing_fields()        
     def update_attributes(self):
-        kwargs = {}
-        for prop, info in self.property_entries.items():
-            if(prop == "image_path"):   # rework this?
-                if(info["entry"].get() != ""):
-                    self.widget_being_edited["image_path"] = self.image_sel.get_path()
-                    continue
-            elif(prop == "image_size_x" or prop == "image_size_y"):
-                if(self.entry_image_size_x.get() != '' and self.entry_image_size_y.get() != ''):
-                    self.widget_being_edited["image_size"] = (int(self.entry_image_size_x.get()), int(self.entry_image_size_y.get()))
-                    continue
-            elif(prop == "font"):
-                value = ("roboto", info["entry"].get())
-            else:
-                value = info["entry"].get()
-                if info["type"] == int and value.isdigit():
-                    kwargs[prop] = int(value)
-                elif info["type"] == str and value or prop=="show":
-                    kwargs[prop] = str(value)
-                elif info["type"] == bool:
-                    kwargs[prop] = bool(value)
-                elif info["type"] == tuple and value[0] and value[1]:
-                    kwargs[prop] = (str(value[0]), -int(value[1]))
-        # Update widget properties only if there are valid changes
-        if "command_name" in kwargs:
-            self.widget_being_edited["command_name"] = kwargs["command_name"]
-            kwargs.pop("command_name")       # we don't actually want to attach the callback for the widget in our editor window
-        if kwargs:
-            self.widget_being_edited["kwargs"] = kwargs
+        for (value,kwarg) in self.kwarg_list.items():
+            self.widget_being_edited["kwargs"].update({value:kwarg})
 
         self.cb_to_apply(self.widget_being_edited)
     
     def change_edited_widget(self, widget_to_edit):
         self.widget_being_edited = widget_to_edit
         self.widget_type = str(widget_to_edit.get("widget_name"))
-        self.attributes_to_edit = self.attributes.get(str(self.widget_type))
-        
+        self.attributes_to_edit = self.edit_dict.get(self.widget_type)
+
         self.size_x = 300
         self.size_y = 50
         try:
@@ -125,14 +138,13 @@ class AttributeEditorWindow(ctk.CTkFrame):
         except:
 
             self.toplevel = ctk.CTkToplevel()
-            self.toplevel.attributes('-topmost', 'true')
             self.toplevel.title(f"Widget Properties Editor")
             self.toplevel.resizable(False, False)
 
             editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
             _, editor_size_y = editor_size.split("x")
 
-            self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)}+{int(editor_offset_y) + int(editor_size_y) + 40}")
+            self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x) + 200}+{int(editor_offset_y) + 200}")
             self.property_entries = {}
 
         for widget in self.toplevel.winfo_children():
@@ -149,219 +161,154 @@ class AttributeEditorWindow(ctk.CTkFrame):
 
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
 
-        self.populate_existing_fields()
+        # self.populate_existing_fields()
     
     def check_attributes(self, attributes_to_edit):
-        if("size_adjustments" in attributes_to_edit):
-            self.current_y = self.size_y
-            self.size_y += 125
-            self.frame_size_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 115)
-            self.frame_size_adjustments.place(x=10, y=self.current_y)
 
-            self.label_width = ctk.CTkLabel(self.frame_size_adjustments, text="Width")
-            self.label_width.place(x=10, y=5)
-            self.entry_width = ctk.CTkEntry(self.frame_size_adjustments, placeholder_text="width", width=50, height=10)
-            self.entry_width.place(x=205, y=8)
-            self.label_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_width_px.place(x=260, y=5)
+        attributes_to_add = []
+        temp_frame_height = 0
 
-            self.label_height = ctk.CTkLabel(self.frame_size_adjustments, text="Height")
-            self.label_height.place(x=10, y=30)
-            self.entry_height = ctk.CTkEntry(self.frame_size_adjustments, placeholder_text="height", width=50, height=10)
-            self.entry_height.place(x=205, y=33)
-            self.label_height_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_height_px.place(x=260, y=30)
+        for attribute in attributes_to_edit:
+            attribute_info = self.editable_attributes.get(attribute)
+            if(attribute != "Spacer"):      # build up list of attributes to place
+                attributes_to_add.append(attribute)
+                if(attribute_info["type"] == tuple):
+                    temp_frame_height += 50
+                else:
+                    temp_frame_height += 25
+            else:           # clear list of attributes to place
+                frame = ctk.CTkFrame(self.toplevel, width=280, height=temp_frame_height+12)
+                frame.place(x=10, y=self.size_y)
+                for index,additional_attribute in enumerate(attributes_to_add):
+                    info = self.editable_attributes.get(additional_attribute)
+                    y_val = (index*25+5)
+                    flags = self.editable_attributes[additional_attribute]["flags"]
+                    if(info.get('type') == int):
+                        label = ctk.CTkLabel(frame, text=additional_attribute)
+                        label.place(x=10, y=y_val)
+                        textVar = tk.StringVar()
+                        if(info["kwarg"] in self.widget_being_edited['kwargs']):    # string var cb logic
+                            textVar.set(self.widget_being_edited['kwargs'][info['kwarg']])
+                        textVar.trace_add(mode='write', callback=lambda name, mode, index, inf=info, tvar=textVar: self.set_value(inf['kwarg'], (tvar.get()), inf['type'], inf["flags"]))
+                        entry = ctk.CTkEntry(frame, placeholder_text=f"{additional_attribute.split(' ')[-1]}", width=50, height=10, textvariable=textVar)
 
-            self.label_corner_radius = ctk.CTkLabel(self.frame_size_adjustments, text="Corner Radius")
-            self.label_corner_radius.place(x=10, y=55)
-            self.entry_corner_radius = ctk.CTkEntry(self.frame_size_adjustments, placeholder_text="radius", width=50, height=10)
-            self.entry_corner_radius.place(x=205, y=58)
-            self.label_height_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_height_px.place(x=260, y=55)
+                        if("px" in info.get('flags')):
+                            entry.place(x=205, y=y_val+3)
+                            label_px = ctk.CTkLabel(frame, text="px")
+                            label_px.place(x=260, y=y_val)
+                        elif(("colour") in info.get('flags')):
+                            entry = ctk.CTkEntry(frame, placeholder_text=f"#RRGGBB", width=50, height=10, textvariable=textVar)
+                            entry.place(x=200, y=y_val+3)
+                            button_ask_color = ctk.CTkButton(master=frame, text="...", width=20,height=10, command=lambda e=entry: self.set_color(e))
+                            button_ask_color.place(x=255, y=y_val+3)
+                        else:
+                            entry = ctk.CTkEntry(frame, placeholder_text=f"{additional_attribute.lower()}", width=70, height=10)
+                            entry.place(x=205, y=y_val+3)
+                    elif(info.get('type') == str):
+                        label = ctk.CTkLabel(frame, text=additional_attribute)
+                        label.place(x=10, y=y_val)
 
-            self.label_border_width = ctk.CTkLabel(self.frame_size_adjustments, text="Border Width")
-            self.label_border_width.place(x=10, y=80)
-            self.entry_border_width = ctk.CTkEntry(self.frame_size_adjustments, placeholder_text="width", width=50, height=10)
-            self.entry_border_width.place(x=205, y=83)
-            self.label_border_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_border_width_px.place(x=260, y=80)
+                        textVar = tk.StringVar()
+                        if(info["kwarg"] in self.widget_being_edited['kwargs']):
+                            textVar.set(self.widget_being_edited['kwargs'][info['kwarg']])
+                        textVar.trace_add(mode='write', callback=lambda name, mode, index, inf=info, tvar=textVar: self.set_value(inf['kwarg'], (tvar.get()), inf['type']))
+                        if(any("dropdown" in flag for flag in flags)):
+                            optionmenu = ctk.CTkOptionMenu(frame, width=120, height=17, values=info['flags'][0].get('dropdown'), anchor='w',dynamic_resizing=False)
+                            optionmenu.configure(command= lambda value,inf=info: self.set_value(inf['kwarg'], value, inf['type']))
+                            
+                            optionmenu.place(x=154, y=y_val+3)
+                
+                        elif("image_path" in info.get('flags')):
+                            entry = ctk.CTkEntry(frame, placeholder_text=f"path/to/img", width=50, height=10, textvariable=textVar)
+                            entry.place(x=200, y=y_val+3)
+                            if("image_path" in self.widget_being_edited):
+                                textVar.set(self.widget_being_edited["image_path"])
+                            button_ask_file = ctk.CTkButton(frame, text="...", width=20, height=10, command=lambda e = entry: self.pick_img(e))
+                            button_ask_file.place(x=255, y=y_val+3) 
 
-            self.property_entries["height"] = {"entry": self.entry_height, "type": int}
-            self.property_entries["width"] = {"entry": self.entry_width, "type": int}
-            self.property_entries["corner_radius"] = {"entry": self.entry_corner_radius, "type": int}
-            self.property_entries["border_width"] = {"entry": self.entry_border_width, "type": int}
+                        else:
+                            entry = ctk.CTkEntry(frame, placeholder_text=f"{additional_attribute.split(' ')[-1]}", width=70, height=10, textvariable=textVar)
+                            entry.place(x=205, y=y_val+3)
+                    elif(info.get('type') == tuple):
+                        if(info.get("kwarg") == "font"):
+                            label = ctk.CTkLabel(frame, text="Font Face")
+                            label.place(x=10, y=y_val)
+                            
+                            optionmenu = ctk.CTkOptionMenu(frame, width=120, height=17, values=info['flags'][0].get('dropdown'), anchor='w',dynamic_resizing=False)
+                            optionmenu.configure(command= lambda value,inf=info: self.set_value(inf['kwarg'], value, inf['type']))
+                            optionmenu.place(x=154, y=y_val+3)
 
-        if("text_adjustments" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 70
-            self.frame_text_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
-            self.frame_text_adjustments.place(x=10, y=self.current_y)
+                            label = ctk.CTkLabel(frame, text="Font Size")
+                            label.place(x=10, y=y_val+25)
 
-            self.label_text = ctk.CTkLabel(self.frame_text_adjustments, text="Text")
-            self.label_text.place(x=10, y=5)
-            self.entry_text = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="text", width=120, height=10)
-            self.entry_text.place(x=155, y=8)
+                            textVar = tk.StringVar()
+                            if(info["kwarg"] in self.widget_being_edited['kwargs']):
+                                textVar.set(str(abs(int(self.widget_being_edited['kwargs'][info['kwarg']][1]))))
+                                optionmenu.set(self.widget_being_edited['kwargs'][info['kwarg']][0])
+                            textVar.trace_add(mode='write', callback=lambda name, mode, index, inf=info, tvar=textVar: self.set_value(inf['kwarg'], (tvar.get()), inf['type']))
 
-            self.label_font_size = ctk.CTkLabel(self.frame_text_adjustments, text="Font Size")
-            self.label_font_size.place(x=10, y=30)
-            self.entry_font_size = ctk.CTkEntry(self.frame_text_adjustments, placeholder_text="size", width=50, height=10)
-            self.entry_font_size.place(x=205, y=33)
-            self.label_font_size_px = ctk.CTkLabel(self.frame_text_adjustments, text="px")
-            self.label_font_size_px.place(x=260, y=30)
+                            entry = ctk.CTkEntry(frame, placeholder_text="Font Size", width=70, height=10, textvariable=textVar)
+                            entry.place(x=205, y=y_val+25)                            
+                    elif(info.get('type') == bool):
+                        label = ctk.CTkLabel(frame, text=additional_attribute)
+                        label.place(x=10, y=y_val)
+                        var = tk.BooleanVar()
+                        if(info['kwarg'] in self.widget_being_edited['kwargs']):
+                            var.set(self.widget_being_edited['kwargs'])
+                        
+                        switch = ctk.CTkSwitch(frame, width=30, height=10,text="", variable=var)
+                        switch.place(x=240, y=y_val+3)
 
-            self.property_entries["text"] = {"entry": self.entry_text, "type": str}
-            self.property_entries["font"] = {"entry": self.entry_font_size, "type": tuple}
+                        var.trace_add(mode='write', callback=lambda name,mode,index, v=var, inf=info: self.set_value(inf['kwarg'], bool(v.get()), inf['type']))
+                        
 
-        if("textbox" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 95
-            self.frame_textbox_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 85)
-            self.frame_textbox_adjustments.place(x=10, y=self.current_y)
 
-            self.label_border_width = ctk.CTkLabel(self.frame_textbox_adjustments, text="Border Spacing")
-            self.label_border_width.place(x=10, y=5)
-            self.entry_border_width = ctk.CTkEntry(self.frame_textbox_adjustments, placeholder_text="spacing", width=50, height=10)
-            self.entry_border_width.place(x=205, y=8)
-            self.entry_border_width_px = ctk.CTkLabel(self.frame_textbox_adjustments, text="px")
-            self.entry_border_width_px.place(x=260, y=8)
+                self.size_y += temp_frame_height + 20
+                temp_frame_height = 0
+                attributes_to_add = []
 
-            self.label_scrollbars = ctk.CTkLabel(self.frame_textbox_adjustments, text="Activate Scroll Bars")
-            self.label_scrollbars.place(x=10, y=30)
-            self.switch_scrollbars = ctk.CTkSwitch(self.frame_textbox_adjustments, text='')
-            self.switch_scrollbars.place(x=240, y=30)
-            
-            self.label_wrapping = ctk.CTkLabel(self.frame_textbox_adjustments, text="Word Wrapping")
-            self.label_wrapping.place(x=10, y=55)
-            self.menu_wrapping = ctk.CTkOptionMenu(self.frame_textbox_adjustments, values=["char", "word", "none"], width=60, height=20)
-            self.menu_wrapping.place(x=210, y=55)
+    def pick_img(self, entry):
+        currdir = os.getcwd()
+        file_path = filedialog.askopenfile(initialdir=currdir)
+        if(file_path is not None):
+            entry.delete(0, 'end')
+            entry.insert(0, file_path.name)
 
-            self.property_entries["border_spacing"] = {"entry": self.entry_border_width, "type": int}
-            self.property_entries["activate_scrollbars"] = {"entry": self.switch_scrollbars, "type": bool}
-            self.property_entries["wrap"] = {"entry": self.menu_wrapping, "type": str}
-        
-        if("command_options" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 50
-            self.frame_command = ctk.CTkFrame(self.toplevel, width=280, height = 40)
-            self.frame_command.place(x=10, y=self.current_y)
-
-            self.label_command_cb_name = ctk.CTkLabel(self.frame_command, text="Command Callback Name:")
-            self.label_command_cb_name.place(x=10, y=5)
-            self.entry_cb_name = ctk.CTkEntry(self.frame_command, placeholder_text="cb name", width=90, height=10)
-            self.entry_cb_name.place(x=185, y=8)
-
-            self.property_entries["command_name"] = {"entry": self.entry_cb_name, "type": str}
-
-        if("image_adjustments" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 100
-
-            self.frame_image_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 90)
-            self.frame_image_adjustments.place(x=10, y=self.current_y)
-
-            self.image_sel = CTkFileSelector(self.frame_image_adjustments, entry_padding=(100,5), entry_width=100, entry_height=20, select_button_height=17, select_button_width=17, label="Image")
-            self.image_sel.place(x=10, y=5)
-
-            self.label_image_size_x = ctk.CTkLabel(self.frame_image_adjustments, text="Image Width")
-            self.label_image_size_x.place(x=10, y=30)
-            self.entry_image_size_x = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="width", width=50, height=10)
-            self.entry_image_size_x.place(x=205, y=33)
-            self.label_image_size_x_px = ctk.CTkLabel(self.frame_image_adjustments, text="px")
-            self.label_image_size_x_px.place(x=260, y=30)
-
-            self.label_image_size_y = ctk.CTkLabel(self.frame_image_adjustments, text="Image Height")
-            self.label_image_size_y.place(x=10, y=55)
-            self.entry_image_size_y = ctk.CTkEntry(self.frame_image_adjustments, placeholder_text="height", width=50, height=10)
-            self.entry_image_size_y.place(x=205, y=58)
-            self.label_image_size_y_px = ctk.CTkLabel(self.frame_image_adjustments, text="px")
-            self.label_image_size_y_px.place(x=260, y=55)
-
-            self.property_entries["image_path"] = {"entry": self.image_sel.get_entry_element(), "type": str}
-            self.property_entries["image_size_x"] = {"entry": self.entry_image_size_x, "type": int}
-            self.property_entries["image_size_y"] = {"entry": self.entry_image_size_y, "type": int}
-
-        if("checkbox" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 70
-            self.frame_checkbox_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
-            self.frame_checkbox_adjustments.place(x=10, y=self.current_y)
-
-            self.label_checkbox_width = ctk.CTkLabel(self.frame_checkbox_adjustments, text="Checkbox Width")
-            self.label_checkbox_width.place(x=10, y=5)
-            self.entry_checkbox_width = ctk.CTkEntry(self.frame_checkbox_adjustments, placeholder_text="width", width=70, height=10)
-            self.entry_checkbox_width.place(x=205, y=8)
-            self.label_checkbox_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_checkbox_width_px.place(x=260, y=5)
-
-            self.label_checkbox_height = ctk.CTkLabel(self.frame_checkbox_adjustments, text="Checkbox Height")
-            self.label_checkbox_height.place(x=10, y=30)
-            self.entry_checkbox_height = ctk.CTkEntry(self.frame_checkbox_adjustments, placeholder_text="height", width=70, height=10)
-            self.entry_checkbox_height.place(x=205, y=33)
-            self.label_checkbox_height_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_checkbox_height_px.place(x=260, y=30)
-
-            self.property_entries["checkbox_width"] = {"entry": self.entry_checkbox_width, "type": int}
-            self.property_entries["checkbox_height"] = {"entry": self.entry_checkbox_height, "type": int}
-
-        if("switch_adjustments" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 70
-            self.frame_switch_adjustments = ctk.CTkFrame(self.toplevel, width=280, height = 60)
-            self.frame_switch_adjustments.place(x=10, y=self.current_y)
-
-            self.label_switch_width = ctk.CTkLabel(self.frame_switch_adjustments, text="Switch Width")
-            self.label_switch_width.place(x=10, y=5)
-            self.entry_switch_width = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="width", width=70, height=10)
-            self.entry_switch_width.place(x=205, y=8)
-            self.label_switch_width_px = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_switch_width_px.place(x=260, y=5)
-
-            self.label_switch_height = ctk.CTkLabel(self.frame_switch_adjustments, text="Switch Height")
-            self.label_switch_height.place(x=10, y=30)
-            self.entry_switch_height = ctk.CTkEntry(self.frame_switch_adjustments, placeholder_text="height", width=70, height=10)
-            self.entry_switch_height.place(x=205, y=33)
-            self.label_switch_height = ctk.CTkLabel(self.frame_size_adjustments, text="px")
-            self.label_switch_height.place(x=260, y=30)
-
-            self.property_entries["switch_width"] = {"entry": self.entry_switch_width, "type": int}
-            self.property_entries["switch_height"] = {"entry": self.entry_switch_height, "type": int}
-
-        if("placeholder_text" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 70
-            self.frame_placeholder_text = ctk.CTkFrame(self.toplevel, width=280, height = 60)
-            self.frame_placeholder_text.place(x=10, y=self.current_y)
-
-            self.label_placeholder_text = ctk.CTkLabel(self.frame_placeholder_text, text="Placeholder Text")
-            self.label_placeholder_text.place(x=10, y=5)
-            self.entry_placeholder_text = ctk.CTkEntry(self.frame_placeholder_text, placeholder_text="text", width=70, height=10)
-            self.entry_placeholder_text.place(x=205, y=8)
-
-            self.label_hidetext = ctk.CTkLabel(self.frame_placeholder_text, text="Hide inputs (*)")
-            self.label_hidetext.place(x=10, y=30)
-            self.checkbox_hidetext = ctk.CTkCheckBox(self.frame_placeholder_text,text=" ", width=70, height=10, onvalue='*', offvalue='')
-            self.checkbox_hidetext.place(x=250, y=33)
-
-            self.property_entries["placeholder_text"] = {"entry": self.entry_placeholder_text, "type": str}
-            self.property_entries["show"] = {"entry": self.checkbox_hidetext, "type": str}
-
-        if("scroll_dir" in attributes_to_edit):
-            self.current_y = self.size_y       # these windows always get added at the bottom
-            self.size_y += 40
-            self.frame_scroll_direction = ctk.CTkFrame(self.toplevel, width=280, height = 30)
-            self.frame_scroll_direction.place(x=10, y=self.current_y)
-
-            self.label_scroll_dir = ctk.CTkLabel(self.frame_scroll_direction, text="Scroll Direction")
-            self.label_scroll_dir.place(x=10, y=5)
-            self.menu_scroll_dir = ctk.CTkOptionMenu(self.frame_scroll_direction, values=["vertical", "horizontal"], width=80, height=20)
-            self.menu_scroll_dir.place(x=190, y=5)
-            
-            self.property_entries["orientation"] = {"entry": self.menu_scroll_dir, "type": str}      # for some reason this doesn't change on demand, only on duplicating widget
-
-        if("color" in attributes_to_edit):
+    def set_value(self, key_to_set, value_to_set, vartype, flag=[]):
+        try:
+            if(vartype == int and not "dontupdate" in flag and value_to_set):
+                if('colour' in flag):           # todo, check if colour is empty, if it is then pass the default colour value of the theme
+                    # if(value_to_set == ""):           
+                    #     self.kwarg_list[f"{key_to_set}"] = "DELETEME"
+                    self.kwarg_list[f"{key_to_set}"] = str(value_to_set)
+                else:
+                    self.kwarg_list[f"{key_to_set}"] = int(value_to_set)
+            elif(vartype == str and not "dontupdate" in flag and value_to_set):
+                if(key_to_set == "command_name"):
+                    self.widget_being_edited["command_name"] = value_to_set
+                else:
+                    self.kwarg_list[f"{key_to_set}"] = (value_to_set)
+            elif(vartype == tuple and not "dontupdate" in flag and value_to_set):
+                if(key_to_set == "font" and not value_to_set.isdigit()):
+                    if("font" in self.kwarg_list):
+                        self.kwarg_list[f"{key_to_set}"] = (value_to_set, self.kwarg_list["font"][1])
+                    else:
+                        self.kwarg_list[f"{key_to_set}"] = (value_to_set, 13)
+                elif(key_to_set == "font" and value_to_set.isdigit()):
+                    if("font" in self.kwarg_list):
+                        self.kwarg_list[f"{key_to_set}"] = (self.kwarg_list["font"][0], -int(value_to_set))
+                    else:  
+                        self.kwarg_list[f"{key_to_set}"] = ("roboto", -int(value_to_set))
+            elif(vartype == bool and not "dontupdate" in flag):
+                self.kwarg_list[f"{key_to_set}"] = bool(value_to_set) 
+            # self.widget_being_edited["kwargs"] = self.kwarg_list
+        except ValueError:
             pass
 
     def get_current_widget(self):
         return self.widget_being_edited
 
-
+    def set_color(self, entry_widget):
+        color = AskColor()
+        entry_widget.delete(0, 'end')
+        entry_widget.insert(0, color.get())
