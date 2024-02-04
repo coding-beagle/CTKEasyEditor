@@ -365,9 +365,9 @@ def generate_file(path, export_preferences):
 
         with open(f"{path}/{export_preferences.get('File Name:')['value']}.py", 'w') as f:   # separate f.write functions to not clog down this file any more than it needs to be
             f.write(file_data)
-            CTkError(editor_window,title="Successful!",size_x= 300,size_y=200, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
+            CTkError(editor_window,title="Successful!",size_x= 150,size_y=180, error_message=f"Successful write at {path}/{export_preferences.get('File Name:')['value']}.py", button_1_text="Okay")
     except Exception as ex:
-        CTkError(editor_window,error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=300)
+        CTkError(editor_window,error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=150, size_y=180)
 
 def save_logic():
     global export_preferences
@@ -396,7 +396,7 @@ def edit_widget_attributes(widget):
     try:
         widget.get("widget").configure(**properties)
     except Exception as ex:
-        CTkError(editor_window, error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="Okay", size_x=150, size_y=150)
+        CTkError(editor_window, error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="Okay", size_x=150, size_y=180)
     
     if(widget.get("image_path") is not None):
         image = ctk.CTkImage(dark_image=Image.open(widget.get("image_path")), size=(widget.get("image_size")))
@@ -449,7 +449,6 @@ def save_as_project(args=None):
     if(save_path != ""):
         save_project()
     
-
 def save_project(args=None):
     if(save_path == ""):
         save_as_project()

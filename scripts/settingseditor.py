@@ -157,6 +157,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.button_apply = ctk.CTkButton(self.toplevel, text='Apply Settings', height=30, width=50, corner_radius=10, command=self.update_attributes)
         self.button_apply.place(x=190, y=10)
 
+        self.kwarg_list = self.widget_being_edited["kwargs"]
+
         self.check_attributes(self.attributes_to_edit)
 
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
