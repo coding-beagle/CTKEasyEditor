@@ -15,7 +15,7 @@ Zip and Installer should be the most recent stable release, the python scripts a
 
 Files, Windows Only (I can't figure out how to freeze to mac format). Just click on links and then press download:
 
-- [Download Installer](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/installer-windows/CTkEasyEditor-1.0-win64.msi)
+- [Download Installer](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/installer-windows/CTkEasyEditor-1.1-win64.msi)
 
 - [Download As Zip](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/zip-windows/ctkeasyeditor.zip)
 
