@@ -33,7 +33,8 @@ Right now it seems to work okay, and the current implementation includes:
 - Easy Application Window Settings Management
 - Easy Active Widgets manager
 - Dragging and snapping of widgets in relation to other widgets and center lines (can be adjusted based on hotkeys)
-- Widget Editing (without theme management yet)
+- Widget Editing 
+- Use of Built In Themes for CTK
 - Export to OOP and Procedural files (OOP by default)
 - Preference Handler (i.e. names of modules, root element, etc)
 - Saving and opening of projects
