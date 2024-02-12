@@ -9,7 +9,7 @@ The original documentation on CustomTkinter is excellent, and I recommend it for
 
 **Note** this is still a work in progress:
 
-![Alt text](/screenshots/ss1.png "Example Screenshot")
+![alt text](screenshots/image.png)
 
 Zip and Installer should be the most recent stable release, the python scripts are the most recent experimental releases.
 
