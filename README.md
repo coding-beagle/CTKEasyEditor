@@ -19,7 +19,7 @@ Files, Windows Only (I can't figure out how to freeze to mac format). Just click
 
 - [Download As Zip](https://github.com/coding-beagle/CTKEasyEditor/blob/main/Files/zip-windows/ctkeasyeditor.zip)
 
-Other platforms must donwload and run python code yourself (I can't figure out cx_freeze):
+Other platforms must download and run python code yourself (I can't figure out cx_freeze):
 
 [Advanced Install Instructions](documentation\install.md)
 
@@ -33,7 +33,7 @@ Right now it seems to work okay, and the current implementation includes:
 - Easy Application Window Settings Management
 - Easy Active Widgets manager
 - Dragging and snapping of widgets in relation to other widgets and center lines (can be adjusted based on hotkeys)
-- Widget Editing 
+- Widget Editing
 - Use of Built In Themes for CTK
 - Export to OOP and Procedural files (OOP by default)
 - Preference Handler (i.e. names of modules, root element, etc)
