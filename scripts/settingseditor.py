@@ -35,7 +35,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
                         "Dropdown Hover Colour": {"type": int, "value": 0,"kwarg":"dropdown_hover_color", "flags":  ["colour"]},
                         "Progress Colour": {"type": int, "value": 0,"kwarg":"progress_color", "flags":  ["colour"]},
                         "Dropdown Text Colour": {"type": int, "value": 0,"kwarg":"dropdown_text_color", "flags":  ["colour"]},
-                        "Disabled Text Colour": {"type": int, "value": 0,"kwarg":"text_color_disabled", "flags":  ["colour"]},
                         "Text": {"type": str, "kwarg":"text", "value": "","flags": []},
                         "Placeholder Text": {"type": str, "kwarg":"placeholder_text", "value": "","flags": []},
                         "Font": {"type": tuple, "value": ("Roboto", 0),"kwarg":"font", "flags": [{"dropdown": ["Roboto", "Comic Sans MS","Calibri", "Roman", "Script", "Courier", "Tekton", "Hobot Std"]}, "px"]},
@@ -100,8 +99,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.toplevel.title(f"Widget Properties Editor")
         self.toplevel.resizable(False, False)
 
-        self.property_entries = {}
-
         self.size_x = 300
         self.size_y = 50
         
@@ -127,14 +124,13 @@ class AttributeEditorWindow(ctk.CTkFrame):
     
     def change_edited_widget(self, widget_to_edit):
         self.widget_being_edited = widget_to_edit
-        self.widget_type = str(widget_to_edit.get("widget_name"))
+        self.widget_type = (self.widget_being_edited.get("widget_name"))
         self.attributes_to_edit = self.edit_dict.get(self.widget_type)
 
         self.size_x = 300
         self.size_y = 50
         try:
             self.toplevel.geometry(f"300x50")
-            self.property_entries = {}
         except:
 
             self.toplevel = ctk.CTkToplevel()
@@ -145,9 +141,8 @@ class AttributeEditorWindow(ctk.CTkFrame):
             _, editor_size_y = editor_size.split("x")
 
             self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x) + 200}+{int(editor_offset_y) + 200}")
-            self.property_entries = {}
 
-        for widget in self.toplevel.winfo_children():
+        for widget in self.winfo_children():
             widget.destroy()
 
         self.label_widget_type = ctk.CTkLabel(self.toplevel,width=50, text=f"Edit {self.widget_being_edited.get('widget_id')}")
@@ -156,19 +151,18 @@ class AttributeEditorWindow(ctk.CTkFrame):
         
         self.button_apply = ctk.CTkButton(self.toplevel, text='Apply Settings', height=30, width=50, corner_radius=10, command=self.update_attributes)
         self.button_apply.place(x=190, y=10)
-
+    
         self.kwarg_list = self.widget_being_edited["kwargs"]
-
+    
         self.check_attributes(self.attributes_to_edit)
-
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
 
-        # self.populate_existing_fields()
     
     def check_attributes(self, attributes_to_edit):
-
         attributes_to_add = []
         temp_frame_height = 0
+        self.kwarg_list = {}
+        ic(self.kwarg_list)
 
         for attribute in attributes_to_edit:
             attribute_info = self.editable_attributes.get(attribute)
@@ -262,8 +256,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
                         switch.place(x=240, y=y_val+3)
 
                         var.trace_add(mode='write', callback=lambda name,mode,index, v=var, inf=info: self.set_value(inf['kwarg'], bool(v.get()), inf['type']))
-                        
-
 
                 self.size_y += temp_frame_height + 20
                 temp_frame_height = 0
@@ -303,7 +295,7 @@ class AttributeEditorWindow(ctk.CTkFrame):
                         self.kwarg_list[f"{key_to_set}"] = ("roboto", -int(value_to_set))
             elif(vartype == bool and not "dontupdate" in flag):
                 self.kwarg_list[f"{key_to_set}"] = bool(value_to_set) 
-            # self.widget_being_edited["kwargs"] = self.kwarg_list
+            self.widget_being_edited["kwargs"] = self.kwarg_list        ## THIS LINE BREAKS EVERYTHIGN FOR SOME REASOGSDJGsdjkgksn
         except ValueError:
             pass
 

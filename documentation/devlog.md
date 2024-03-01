@@ -1,3 +1,9 @@
+**01-03-2024**
+
+Todo: 
+
+- Fix widgets editing others
+
 **03-02-2024**
 Todo:
 
