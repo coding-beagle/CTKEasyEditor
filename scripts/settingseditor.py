@@ -57,7 +57,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
                         "Orientation": {"type": str, "value": "", "kwarg": "orientation", "flags": [{"dropdown": ["horizontal", "vertical"]}]},
                         "Mode": {"type": str, "value": "", "kwarg": "mode", "flags": [{"dropdown": ["determinate", "indeterminate"]}]},
                         "Text Wrapping": {"type": str, "value": "", "kwarg": "wrap", "flags": [{"dropdown": ["char","word", "none"]}]},
-                        
                         }
 
     edit_dict = {
@@ -162,7 +161,6 @@ class AttributeEditorWindow(ctk.CTkFrame):
         attributes_to_add = []
         temp_frame_height = 0
         self.kwarg_list = {}
-        ic(self.kwarg_list)
 
         for attribute in attributes_to_edit:
             attribute_info = self.editable_attributes.get(attribute)

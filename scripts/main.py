@@ -37,30 +37,48 @@ widget_types = {
     # "Tab View": ctk.CTkTabview Drag is broken for this
 }
 
-# for a rainy day, also i'm not sure how this will play with the grid manager yet
-# def toggle_grid():
-#     global background
-#     if(export_preferences.get("Grid Edit Mode:").get("value")):
-#         height = int(entry_height.get())
-#         width = int(entry_width.get())
-#         grid_spacing_x = width / (int(export_preferences.get("Grid Count X:")["value"]) + 1)
-#         grid_spacing_y = height / (int(export_preferences.get("Grid Count Y:")["value"]) + 1)
-#         im = Image.new(mode = "RGB", size = (width, height), color=(36,36,36))
-#         draw = ImageDraw.Draw(im)
-#         for x in (range(1, int(export_preferences.get("Grid Count X:")["value"])+ 1)):
-#             draw.line([(int((x)*grid_spacing_x),0),(int((x)*grid_spacing_x), height)], (0, 128,128,40), 1)
-#         for y in (range(1, int(export_preferences.get("Grid Count Y:")["value"])+1)):
-#             draw.line([(0,int((y)*grid_spacing_y)),(width, int((y)*grid_spacing_y))], (0, 128,128, 40), 1)
-#         image = ctk.CTkImage(dark_image=im, size=(width,height))
-#         background = ctk.CTkLabel(app, image=image, text='', height=height, width=width)
-#         background.place(x=0,y=0)
-#     else:
-#         background.destroy()
+def change_grid(tuple_up_down):
+    if(tuple_up_down[0] and tuple_up_down[1]):
+        if(export_preferences.get("Grid Count X:")["value"] > 1):
+            export_preferences.get("Grid Count X:")["value"] -= 1
+    elif(tuple_up_down[0] and not(tuple_up_down[1])):
+        export_preferences.get("Grid Count X:")["value"] += 1
+    elif(not(tuple_up_down[0]) and tuple_up_down[1]):
+        if(export_preferences.get("Grid Count Y:")["value"] > 1):
+            export_preferences.get("Grid Count Y:")["value"] -= 1
+    elif(not(tuple_up_down[0]) and not(tuple_up_down[1])):
+        export_preferences.get("Grid Count Y:")["value"] += 1
+    
+    toggle_grid()
+    toggle_grid()
+
+def toggle_grid(*args):
+    global dragging
+    if(not(dragging)):
+        global background
+        export_preferences.get("Grid Edit Mode:")["value"] = not(export_preferences.get("Grid Edit Mode:")["value"])
+        if(export_preferences.get("Grid Edit Mode:").get("value")):
+            height = int(entry_height.get())
+            width = int(entry_width.get())
+            grid_spacing_x = width / (int(export_preferences.get("Grid Count X:")["value"]) + 1)
+            grid_spacing_y = height / (int(export_preferences.get("Grid Count Y:")["value"]) + 1)
+            im = Image.new(mode = "RGBA", size = (width, height), color=(0,0,0, 0))
+            draw = ImageDraw.Draw(im)
+            for x in (range(1, int(export_preferences.get("Grid Count X:")["value"])+ 1)):
+                draw.line([(int((x)*grid_spacing_x),0),(int((x)*grid_spacing_x), height)], (0, 128,128,255), 1)
+            for y in (range(1, int(export_preferences.get("Grid Count Y:")["value"])+1)):
+                draw.line([(0,int((y)*grid_spacing_y)),(width, int((y)*grid_spacing_y))], (0, 128,128, 255), 1)
+            image = ctk.CTkImage(dark_image=im, size=(width,height))
+            background = ctk.CTkLabel(app, image=image, text='', height=height, width=width)
+            background.place(x=0,y=0)
+            draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
+        else:
+            background.destroy()
 
 export_preferences = {
-    # "Grid Edit Mode:": {"value": False, "cb": toggle_grid "hotkey": []},
-    # "Grid Count X:": {"value": 10, "cb": None},
-    # "Grid Count Y:": {"value": 10, "cb": None},
+    "Grid Edit Mode:": {"value": False, "cb": toggle_grid},
+    "Grid Count X:": {"value": 4, "cb": None},
+    "Grid Count Y:": {"value": 4, "cb": None},
     "Export as OOP?": {"value": True, "cb": None},
     "File Name:": {"value": "generated_file", "cb": None},
     "CustomTkinter Module Name:": {"value": "ctk", "cb": None},
@@ -90,9 +108,16 @@ def set_theme_to_user_theme():
 def make_draggable(widget):
     widget.get("widget").bind("<Button-1>", on_drag_start)
     widget.get("widget").bind("<B1-Motion>", on_drag_motion)
+    widget.get("widget").bind("<ButtonRelease-1>", on_drag_end)
     # widget.get("widget").bind("<ButtonRelease-1>", kill_snap_widget)
 
+def on_drag_end(event):
+    global dragging
+    dragging = False
+
 def on_drag_start(event):
+    global dragging
+    dragging = True
     widget = event.widget.master
     widget._drag_start_x = event.x
     widget._drag_start_y = event.y
@@ -116,13 +141,29 @@ def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_
                     if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
                         return active_widget_y_midpoint
                 
-    if(test_x): # testing for app center line
+    if(test_x and not(export_preferences["Grid Edit Mode:"]["value"])): # testing for app center line
         if(abs(widget_x_mid - app.winfo_width()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
         else: return False
-    else:
+    elif(not(export_preferences["Grid Edit Mode:"]["value"])):
         if(abs(widget_y_mid - app.winfo_height()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
         else: return False
-
+    elif(test_x and (export_preferences["Grid Edit Mode:"]["value"])): # When Grid Mode is Active
+        app_width = app.winfo_width()
+        spacing_x = app_width/(export_preferences["Grid Count X:"]["value"] + 1)
+        for i in range(0, export_preferences["Grid Count X:"]["value"]+1):
+            if(abs(widget_x_mid - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x - widget_half_x
+            if(abs((widget_x_mid - widget_half_x) - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x
+            if(abs((widget_x_mid + widget_half_x) - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x - 2*widget_half_x
+        return False
+    elif(not(test_x) and (export_preferences["Grid Edit Mode:"]["value"])): # When Grid Mode is Active
+        app_height = app.winfo_height()
+        spacing_y = app_height/(export_preferences["Grid Count Y:"]["value"] + 1)
+        for i in range(0, export_preferences["Grid Count Y:"]["value"]+1):
+            if(abs(widget_y_mid - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y - widget_half_y
+            if(abs((widget_y_mid - widget_half_y) - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y
+            if(abs((widget_y_mid + widget_half_y) - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y - 2*widget_half_y
+        return False
+        
 def on_drag_motion(event):
     widget = event.widget.master
     widget_half_height = widget.cget("height") / 2
@@ -142,7 +183,7 @@ def on_drag_motion(event):
     widget.place(x=x, y=y)
     for active_widget in active_widgets:
         if widget == active_widget.get("widget"):
-            active_widget['location'] = (x,y)
+            active_widget['location'] = (int(x),int(y))
             break
 
 def do_popup(event, frame, widget):
@@ -313,7 +354,8 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
 
     if(delete_existing_widgets):
         for app_widgets in app.winfo_children():
-            app_widgets.destroy()
+            if((app_widgets.nametowidget(app_widgets) != background)):
+                app_widgets.destroy()
     
     for widget in active_widgets:
         if(new_canvas):
@@ -569,6 +611,14 @@ dropdown_file.add_option(option="Open Project...         (ctrl + O)", command=op
 editor_window.bind_all("<Control-o>", open_project)
 dropdown_file.add_separator()
 dropdown_file.add_option(option="Export as .py", command=save_logic)
+
+editor_window.bind_all("<Control-g>", toggle_grid)
+editor_window.bind_all("<Control-Up>", lambda e: change_grid((True, False)))
+editor_window.bind_all("<Control-Down>", lambda e: change_grid((True, True)))
+editor_window.bind_all("<Control-Left>", lambda e: change_grid((False, True)))
+editor_window.bind_all("<Control-Right>", lambda e: change_grid((False, False)))
+
+dragging = False
 
 save_path = ""
 

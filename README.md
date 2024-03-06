@@ -4,8 +4,9 @@ An easy GUI editor for CustomTkinter in Python - think of it as a boilerplate ge
 
 Thanks to Tom Schimansky for their CustomTkinter development. Find the original page for CustomTkinter here: https://customtkinter.tomschimansky.com/
 The original documentation on CustomTkinter is excellent, and I recommend it for anyone starting off and struggling with the usage of this tool.
+Also thanks to Akascapes for providing the CTkColorMenu widget and CTkMenuBar widget.
 
-**Note** this is still a work in progress:
+Note this is still a work in progress:
 
 ![alt text](screenshots/image.png)
 
@@ -21,19 +22,22 @@ Other platforms must download and run python code yourself (I can't figure out c
 
 [Advanced Install Instructions](documentation\install.md)
 
-Example Usage:
-
-![Alt text](/screenshots/usage1.png "Usage Screenshot")
+![alt text](Screenshots/snappingupdate.png)
 
 This tool is still in development, please report any bugs or issues under the issues tab.
 Right now it seems to work okay, and the current implementation includes:
 
+- **Latest Update**:
+  - Improved Widget Snapping, including a new grid snapping option (Accessed through the preference handler, or CTRL + G) 
+  - Grid resolution can be changed by CTRL + Arrow Keys
+  - Other minor bug fixes and refactoring.
+
 - Easy Application Window Settings Management
 - Easy Active Widgets manager
-- Dragging and snapping of widgets in relation to other widgets and center lines (can be adjusted based on hotkeys)
+- Dragging and snapping of widgets
 - Widget Editing
 - Use of Built In Themes for CTK
-- Export to OOP and Procedural files (OOP by default)
+- Export to OOP and Procedural files
 - Preference Handler (i.e. names of modules, root element, etc)
 - Saving and opening of projects
 
@@ -45,10 +49,12 @@ To be implemented soon:
 Hotkeys & Shortcuts:
 
 - CTRL --> Hold while dragging to prevent widget from snapping into place
+- Shift --> Enforce Snapping on Grid / Center lines only
 - ALT --> Only snap widget to other widgets, not the app center lines
 - Double Click --> Opens editor window on that widget
 - Right Click --> Opens context menu on widget (edit, duplicate, delete)
 
 - The standard save, save as and open hotkeys, i.e. ctrl+s, ctrl+shift+s, ctrl+o, etc
+- Control G --> Open the grid aligner
+- Control + arrow keys --> Adjust the grid size
 
-Yes, the UI looks bad right now. Yes, I will rework it using this tool when I make a version of it that works adequately.
