@@ -15,6 +15,7 @@ from CTkImage import *
 from CTkError import *
 import json
 from sys import platform
+import math
 
 widget_types = {
     "Add Widgets Here": None,
@@ -77,13 +78,14 @@ def toggle_grid(*args):
 
 export_preferences = {
     "Grid Edit Mode:": {"value": False, "cb": toggle_grid},
-    "Grid Count X:": {"value": 4, "cb": None},
-    "Grid Count Y:": {"value": 4, "cb": None},
+    "Grid Count X:": {"value": 2, "cb": None},
+    "Grid Count Y:": {"value": 2, "cb": None},
+    "Snapping Sensitivity": {"value": 5, "cb": None},
     "Export as OOP?": {"value": True, "cb": None},
     "File Name:": {"value": "generated_file", "cb": None},
     "CustomTkinter Module Name:": {"value": "ctk", "cb": None},
     "Tkinter Module Name:": {"value": "tk", "cb": None},
-    "Root Name:": {"value": "root", "cb": None},
+    "Root Name:": {"value": "root", "cb": lambda: frame_widgets.update_masters_list(find_frames())},
     "Class Name (OOP Only):": {"value": "Root", "cb": None},
 }
 
@@ -127,41 +129,46 @@ def on_drag_start(event):
 # if it's x position is different by 20 pixels, same with y
 # it achieves that through some black magic codde
 def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y):
-    
+    snapping_sensitivity = int(export_preferences["Snapping Sensitivity"]["value"])
     for active_widget in active_widgets:
-        if(widget == active_widget.get("widget")): continue
+        if(widget == active_widget.get("widget") or active_widget['widget'].master == widget): 
+            # ic(active_widget['master'])
+            continue
         else:
             active_widget_x_midpoint, active_widget_y_midpoint = active_widget.get("location")
+            active_widget_width, active_widget_height = active_widget.get("widget").cget("width"), active_widget.get("widget").cget("height")
             active_widget_x_midpoint += active_widget.get("widget").winfo_width() / 2
             if(not keyboard.is_pressed("shift")):
                 if(test_x):
-                    if(abs(widget_x_mid - active_widget_x_midpoint)) < 10:
-                        return active_widget_x_midpoint - active_widget.get("widget").winfo_width()/2
+                    if(abs(widget_x_mid - active_widget_x_midpoint)) < snapping_sensitivity: return active_widget_x_midpoint - active_widget.get("widget").winfo_width()/2
+                    if(abs((widget_x_mid) - active_widget_x_midpoint + active_widget_width)) < snapping_sensitivity: return active_widget_x_midpoint - active_widget_width - widget_half_x
+                    if(abs((widget_x_mid) - active_widget_x_midpoint - active_widget_width)) < snapping_sensitivity: return active_widget_x_midpoint + active_widget_width - widget_half_x
                 else:
-                    if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < 10:
-                        return active_widget_y_midpoint
-                
+                    if(abs(widget_y_mid - active_widget_y_midpoint - active_widget.get("widget").winfo_height() / 2)) < snapping_sensitivity: return active_widget_y_midpoint
+                    if(abs((widget_y_mid - widget_half_y) - active_widget_y_midpoint - active_widget_height)) < snapping_sensitivity: return active_widget_y_midpoint + active_widget_height
+                    if(abs((widget_y_mid - widget_half_y) - active_widget_y_midpoint + active_widget_height)) < snapping_sensitivity: return active_widget_y_midpoint - active_widget_height
+
     if(test_x and not(export_preferences["Grid Edit Mode:"]["value"])): # testing for app center line
-        if(abs(widget_x_mid - app.winfo_width()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
+        if(abs(widget_x_mid - app.winfo_width()/2) < snapping_sensitivity and not keyboard.is_pressed("alt")): return app.winfo_width()/2 - widget_half_x
         else: return False
     elif(not(export_preferences["Grid Edit Mode:"]["value"])):
-        if(abs(widget_y_mid - app.winfo_height()/2) < 10 and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
+        if(abs(widget_y_mid - app.winfo_height()/2) < snapping_sensitivity and not keyboard.is_pressed("alt")): return app.winfo_height()/2 - widget_half_y
         else: return False
     elif(test_x and (export_preferences["Grid Edit Mode:"]["value"])): # When Grid Mode is Active
         app_width = app.winfo_width()
         spacing_x = app_width/(export_preferences["Grid Count X:"]["value"] + 1)
         for i in range(0, export_preferences["Grid Count X:"]["value"]+1):
-            if(abs(widget_x_mid - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x - widget_half_x
-            if(abs((widget_x_mid - widget_half_x) - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x
-            if(abs((widget_x_mid + widget_half_x) - i*spacing_x) < 10 and not keyboard.is_pressed("alt")): return i*spacing_x - 2*widget_half_x
+            if(abs(widget_x_mid - i*spacing_x) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_x - widget_half_x
+            if(abs((widget_x_mid - widget_half_x) - i*spacing_x) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_x
+            if(abs((widget_x_mid + widget_half_x) - i*spacing_x) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_x - 2*widget_half_x
         return False
     elif(not(test_x) and (export_preferences["Grid Edit Mode:"]["value"])): # When Grid Mode is Active
         app_height = app.winfo_height()
         spacing_y = app_height/(export_preferences["Grid Count Y:"]["value"] + 1)
         for i in range(0, export_preferences["Grid Count Y:"]["value"]+1):
-            if(abs(widget_y_mid - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y - widget_half_y
-            if(abs((widget_y_mid - widget_half_y) - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y
-            if(abs((widget_y_mid + widget_half_y) - i*spacing_y) < 10 and not keyboard.is_pressed("alt")): return i*spacing_y - 2*widget_half_y
+            if(abs(widget_y_mid - i*spacing_y) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_y - widget_half_y
+            if(abs((widget_y_mid - widget_half_y) - i*spacing_y) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_y
+            if(abs((widget_y_mid + widget_half_y) - i*spacing_y) < snapping_sensitivity and not keyboard.is_pressed("alt")): return i*spacing_y - 2*widget_half_y
         return False
         
 def on_drag_motion(event):
@@ -197,11 +204,34 @@ def do_popup(event, frame, widget):
 
 def destroy_current_widget():
     global current_widget
+    children_list = current_widget.get("widget").children.copy()
+    if(children_list is not None):
+        for children in children_list:
+            try:
+                child = find_widget_in_active_widgets((current_widget['widget'].nametowidget((children))))
+                if(child is not None):
+                    delete_widget_from_frame(child)
+            except Exception as ex:
+                ic(ex)
+
     current_widget.get("widget").destroy()
     ctk.set_default_color_theme('blue')
     delete_widget_from_frame(current_widget)
     set_theme_to_user_theme()
-    
+
+def update_size_vars(event):
+    global window_width, window_height, app
+    if event.widget.widgetName == "toplevel":
+        if (window_width != event.width) and (window_height != event.height):
+            window_width.set(event.width) 
+            window_height.set(event.height)
+        if (keyboard.is_pressed("ctrl")):
+            width_rounded = math.ceil(event.width/10.0) * 10
+            height_rounded = math.ceil(event.height/10.0) * 10
+            window_width.set(width_rounded) 
+            window_height.set(height_rounded)
+            app.geometry(f"{width_rounded}x{height_rounded}")
+
 def create_app_window():
     global app
     if(app is not None):
@@ -210,8 +240,13 @@ def create_app_window():
     editor_size,editor_offset_x, editor_offset_y= editor_window.geometry().split("+")
     editor_size_x, _ = editor_size.split("x")
     app.geometry(f"{entry_width.get()}x{entry_height.get()}+{int(editor_offset_x)+int(editor_size_x) + 10}+{int(editor_offset_y)}")    # ensures the window always gets created next to the editor
-    app.resizable(False, False)
+    if(switch_resizable_window.get()):
+        app.resizable(True, True)
+    else:
+        app.resizable(False, False)
     app.title(entry_name.get())
+
+    app.bind("<Configure>", update_size_vars)
 
     return app
 
@@ -239,6 +274,12 @@ def delete_widget_from_frame(widget):
     frame_widgets.remove_widget(widget.get('widget'))
     active_widgets.remove(widget)
 
+def find_widget_reference_with_name(name):
+    for widget in active_widgets:
+        if(widget['widget_id'] == name):
+            return widget['widget']
+    return None
+
 def move_widget_up_in_frame(widget):
     ctk.set_default_color_theme('blue')
     global active_widgets
@@ -247,9 +288,14 @@ def move_widget_up_in_frame(widget):
         if(active_widget.get("widget") == widget.get("widget")):
             break
         widget_index += 1
-    if(widget_index != 0):
+    if(widget_index == 0):
+        return
+    elif(editor_window.nametowidget(active_widgets[widget_index-1]['widget']) != find_widget_reference_with_name(active_widgets[widget_index]['master'])):
         active_widgets[widget_index], active_widgets[widget_index - 1] = active_widgets[widget_index - 1], active_widgets[widget_index]
         frame_widgets.swap_widget_from_to(widget_index, widget_index-1)
+    else:
+        CTkError(editor_window, error_message=f"Widget {active_widgets[widget_index]['widget_id']} cannot be above master {active_widgets[widget_index - 1]['widget_id']}!", button_1_text="Okay", size_x=150, size_y=100)
+        return
     set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
@@ -261,17 +307,57 @@ def move_widget_down_in_frame(widget):
         if(active_widget.get("widget") == widget.get("widget")):
             break
         widget_index += 1
-    if(widget_index != len(active_widgets)- 1):
+    # ic(widget_index)
+    if(widget_index == len(active_widgets) - 1):
+        return
+    elif(editor_window.nametowidget(active_widgets[widget_index]['widget']) != find_widget_reference_with_name(active_widgets[widget_index + 1]['master'])):
         active_widgets[widget_index], active_widgets[widget_index + 1] = active_widgets[widget_index + 1], active_widgets[widget_index]
         frame_widgets.swap_widget_from_to(widget_index, widget_index+1)
+    else:
+        CTkError(editor_window, error_message=f"Widget {active_widgets[widget_index]['widget_id']} cannot be below child {active_widgets[widget_index + 1]['widget_id']}!", button_1_text="Okay", size_x=150, size_y=100)
+        return
     set_theme_to_user_theme()
     draw_widgets(app, update_widgets=True, delete_existing_widgets=True)
     
+def change_master_overall(widget, new_master):
+    if(widget['widget'] == new_master['Reference']):
+        CTkError(editor_window, button_1_text="Okay",error_message="Widget Master Cannot Be Itself!", size_x=150, size_y=100)
+        raise TypeError("Cannot Set Widget Master To Itself!")
+        return
+    
+    new_master_index = 0
+    widget_index = 0
+    for index, active_widget in enumerate(active_widgets):
+        if(active_widget['widget'] == widget['widget']):
+            widget_index = index
+        if(active_widget['widget'] == new_master["Reference"]):
+            new_master_index = index
+
+    if(new_master_index > widget_index):
+        CTkError(editor_window, button_1_text="Okay",error_message="Widget master cannot be drawn after child!", size_x=150, size_y=100)
+        raise TypeError("Widget Master is Lower than Child!")
+        return
+    # ic(widget, new_master)
+    widget['widget'].destroy()
+    # ic(new_master['Reference'])
+    widget['master'] = new_master['Name']
+    widget['location'] = (0, 0)
+    draw_widgets(app, delete_existing_widgets=True, update_widgets=True)
+    frame_widgets.update_masters_list(find_frames())
+
+def find_frames():
+    frames = []
+    frames.append({"Name": export_preferences.get("Root Name:")['value'], "Reference": app})
+    for widget in active_widgets:
+        if(isinstance(widget['widget'], ctk.CTkFrame)):
+            frames.append({"Name":widget['widget_id'],"Reference": widget['widget']})
+    return frames
+
 def add_bindings(draw=True, updated_menu=None):
     for widget_instance in active_widgets:           # we want to call these everytime a new widget is added
         if(frame_widgets.check_widget(widget_instance.get('widget')) == False):
             ctk.set_default_color_theme('blue')
-            frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w), move_up_cb=lambda w=widget_instance: move_widget_up_in_frame(w), move_down_cb=lambda w=widget_instance: move_widget_down_in_frame(w))
+            frame_widgets.add_widget(widget_instance,name_change_cb=change_widget_id ,edit_cb=lambda w=widget_instance: open_editor_window(w), masters_list=find_frames(), delete_cb=lambda w=widget_instance: delete_widget_from_frame(w), move_up_cb=lambda w=widget_instance: move_widget_up_in_frame(w), move_down_cb=lambda w=widget_instance: move_widget_down_in_frame(w), change_master_command=change_master_overall)
             set_theme_to_user_theme()
         if(not(widget_instance.get("has_bindings"))):
             widget_instance.get('widget').bind("<Button-3>", lambda event, w=widget_instance.get('widget'): do_popup(event, widget=w, frame=new_right_click_menu(w._nametowidget(w.winfo_parent()))))
@@ -281,7 +367,7 @@ def add_bindings(draw=True, updated_menu=None):
     if(draw):
         draw_widgets()
 
-def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={}, widget_command=None,**kwargs):
+def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_list=[],from_file=False, from_file_dict={}, widget_command=None, master=None,**kwargs):
     set_theme_to_user_theme()
     # Get the widget class from the dictionary
     widget_class = widget_types.get(widget_type)
@@ -299,18 +385,30 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
                 number_of_same_widgets += 1
                 if(f"{widget_type} {number_of_same_widgets}" not in list_of_widgets_names):
                     break
-        created_widget = {"widget":widget_class(app, **kwargs),
-                          "location": (location_x, location_y),
-                          "widget_name": str(widget_type),  # todo check why we need this
-                          "widget_type": str(widget_class),
-                          "kwargs": kwargs,
-                          "widget_id": f"{widget_type} {number_of_same_widgets}",
-                          "has_bindings": False}  
+        
+        created_widget = {
+            "widget": None,
+            "location": (location_x, location_y),
+            "widget_name": str(widget_type),  # todo check why we need this
+            "widget_type": str(widget_class),
+            "kwargs": kwargs,
+            "widget_id": f"{widget_type} {number_of_same_widgets}",
+            "has_bindings": False,
+            "master": None
+        }
+
+        if(master is not None):
+            created_widget["widget"] = widget_class(find_widget_reference_with_name(master), **kwargs)
+            created_widget["master"] = master  
+        else:
+            created_widget["widget"] = widget_class(app, **kwargs)
+            created_widget["master"] = export_preferences.get("Root Name:")["value"] 
+
         if(widget_type == "Option Menu"):
             created_widget.get("widget").configure(state="disabled")
         if(duplicate):
             created_widget["location"] = (location_x+10, location_y+10)
-            created_widget["kwargs"] = kwarg_list   # this is needed because image is part of kwargs for some reason
+            created_widget["kwargs"] = kwarg_list.copy()   # this is needed because image is part of kwargs for some reason
             created_widget["command_name"] = widget_command
             if("image" in widget_to_duplicate):
                 created_widget["image_path"] = widget_to_duplicate["image_path"]
@@ -329,6 +427,8 @@ def create_widget(widget_type, duplicate=False, widget_to_duplicate=None, kwarg_
     
         active_widgets.append(created_widget)
         add_bindings()
+
+        return created_widget
 
 def bring_up_a_layer():
     global current_widget
@@ -349,6 +449,11 @@ def new_right_click_menu(master):
     return RightClickMenu
 
 def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widgets=False):
+    global background
+    try:
+        background
+    except:
+        background = None
     if(new_canvas):
         right_click_menu=new_right_click_menu(new_canvas)
 
@@ -356,10 +461,24 @@ def draw_widgets(new_canvas = None, update_widgets = False, delete_existing_widg
         for app_widgets in app.winfo_children():
             if((app_widgets.nametowidget(app_widgets) != background)):
                 app_widgets.destroy()
-    
+    # ic(export_preferences.get('Root Name:')['value'])
+
+    app_ref = new_canvas
+
     for widget in active_widgets:
         if(new_canvas):
             kwargs = widget.get('kwargs')
+            # ic(widget.get('master'))
+            
+            if(widget.get('master') != export_preferences.get('Root Name:')['value']):
+                temp = [i.get('widget') for i in active_widgets if i['widget_id'] == widget.get('master')][0] # reference of master widget
+                new_canvas = app.nametowidget(str(temp))
+                
+            else:
+                # ic("check passed!")
+                new_canvas = app_ref
+            # ic(new_canvas)
+            widget['widget'] = None
             widget['widget'] = widget_types.get((widget.get('widget_name')))(new_canvas, **kwargs)
             if('image' in widget):
                 widget['widget'].configure(image=widget["image"])
@@ -418,9 +537,22 @@ def save_logic():
     if(path != ""):
         generate_file(path, export_preferences)
 
+def find_children(widget):
+    output = []
+    for widgets in active_widgets:
+        # ic(widgets["master"])
+        if(widgets['master'] == widget["widget_id"]):
+            output.append(widgets)
+    # ic(output)
+    return output
+
 def duplicate_current_widget():
     global current_widget
-    create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command_name"))
+    duplicate = create_widget(current_widget.get("widget_name"), True, current_widget, kwarg_list=current_widget.get("kwargs"), widget_command=current_widget.get("command_name"))
+    if(current_widget['widget_name'] == "Frame"):
+        for widget in find_children(current_widget):
+            ic(widget)
+            create_widget(widget.get("widget_name"), True, widget, kwarg_list=widget["kwargs"], master=duplicate["widget_id"])
 
 def edit_widget_attributes(widget):
     properties = widget.get("kwargs")
@@ -449,8 +581,10 @@ def open_editor_window(widget):
     ctk.set_default_color_theme('blue')
     global attribute_editor_window
     if(attribute_editor_window):
+        # ic("Cheeck")
         attribute_editor_window.change_edited_widget(widget)
     else:
+        # ic("FooBar")
         attribute_editor_window = AttributeEditorWindow(editor_window, widget_to_edit=widget, apply_settings_cb=edit_widget_attributes, app_pos = (app.winfo_geometry()))
     set_theme_to_user_theme()
 
@@ -511,9 +645,10 @@ def save_project(args=None):
             if("image_path" in active_widget):
                 save.append(active_widget["image_path"])
                 save.append(active_widget["image_size"])
+            save.append(active_widget["master"])
             data_to_save.append(save)
     except Exception as ex:
-        CTkError(error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=300, size_y=200)
+        CTkError(error_message=f"Error occured: {ex}\n Please Report On Github", button_1_text="okay", size_x=200, size_y=120)
         return
     # so we don't overwrite files if the data isn't generated properly
     with open(f"{save_path}", "w") as write_file:
@@ -544,7 +679,6 @@ def open_project(args=None):
                 entry_height.insert(0, int(height))
                 entry_height.delete(len(str(entry_height.get())) - 1, tk.END)
 
-                   
                 title, theme = new_data[1].split("title of ")[1].split(', and has a theme of ')
                 theme = theme.split(".")[0]
                 entry_name.delete(0, tk.END)
@@ -561,28 +695,44 @@ def open_project(args=None):
                 apply_window_settings()         # deal with themes
 
                 for item in new_data[2:]: # rest of data is widgets
-                    if(len(item) == 4):
+                    if(len(item) == 5):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3]}
-                    elif(len(item)==5):
+                    elif(len(item)==6):
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command_name": item[4]}
                     else:
                         item_dict = {"widget_id": item[1], "location":item[2],"kwargs": item[3], "command_name": item[4], "image_path": item[5], "image_size": tuple(item[6])}
                     if("font" in item_dict["kwargs"]):
                         item_dict["kwargs"]["font"] = tuple(item_dict["kwargs"]["font"])
-                    create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)        
+                    if(find_widget_reference_with_name(item[-1]) is not None):
+                        create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict, master = item[-1])
+                    else:
+                        create_widget(item[0], False, None, from_file=True, from_file_dict=item_dict)        
                 
     else:
         return    
 
 def validate(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
-        if value_if_allowed:
-            try:
-                int(value_if_allowed)
-                return True
-            except ValueError:
-                return False
+        # if value_if_allowed:
+        #     try:
+        #         int(value_if_allowed)
+        #         return True
+        #     except ValueError:
+        #         return False
+        # else:
+        #     return False
+    return True
+
+def toggle_resize(*args):
+    if(args):
+        if(switch_resizable_window.get()):
+            switch_resizable_window.deselect()
         else:
-            return False
+            switch_resizable_window.select()
+    global app
+    if(switch_resizable_window.get()):
+        app.resizable(True, True)
+    else:
+        app.resizable(False, False)
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -590,7 +740,7 @@ ctk.set_default_color_theme("blue")
 theme = "blue"
 
 editor_window = ctk.CTk()
-editor_window.geometry("400x500")
+editor_window.geometry("400x530")
 editor_window.resizable(width=False, height=False)
 editor_window.title("CTKEasyEditor")
 icon = ImageTk.PhotoImage(file = 'scripts/assets/icon.png')
@@ -613,10 +763,10 @@ dropdown_file.add_separator()
 dropdown_file.add_option(option="Export as .py", command=save_logic)
 
 editor_window.bind_all("<Control-g>", toggle_grid)
-editor_window.bind_all("<Control-Up>", lambda e: change_grid((True, False)))
-editor_window.bind_all("<Control-Down>", lambda e: change_grid((True, True)))
-editor_window.bind_all("<Control-Left>", lambda e: change_grid((False, True)))
-editor_window.bind_all("<Control-Right>", lambda e: change_grid((False, False)))
+editor_window.bind_all("<Control-Right>", lambda e: change_grid((True, False)))
+editor_window.bind_all("<Control-Left>", lambda e: change_grid((True, True)))
+editor_window.bind_all("<Control-Down>", lambda e: change_grid((False, True)))
+editor_window.bind_all("<Control-Up>", lambda e: change_grid((False, False)))
 
 dragging = False
 
@@ -630,19 +780,22 @@ dropdown_file.add_option(option="Preferences...", command=export_preferences_edi
 label_window_settings = ctk.CTkLabel(editor_window, text="Window Settings")
 label_window_settings.pack(anchor="w", padx=15)
 
-frame_window_settings = ctk.CTkFrame(editor_window, width=380, height=140)
+frame_window_settings = ctk.CTkFrame(editor_window, width=380, height=170)
 
 vcmd = (editor_window.register(validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+
+window_width = tk.Variable()
+window_height = tk.Variable()
 
 label_entry_width = ctk.CTkLabel(frame_window_settings, text="px")
 label_entry_width.place(x=200, y=10)
 label_left_entry_width = ctk.CTkLabel(frame_window_settings, text="Width")
 label_left_entry_width.place(x=10, y=10)
-entry_width = ctk.CTkEntry(frame_window_settings,placeholder_text = "Width of Window", validate = 'key', validatecommand=vcmd)
+entry_width = ctk.CTkEntry(frame_window_settings,placeholder_text = "Width of Window", validate = 'key', validatecommand=vcmd, textvariable=window_width)
 entry_width.place(x=55, y=10)
 entry_width.insert(0, 500)
 
-entry_height = ctk.CTkEntry(frame_window_settings, placeholder_text= "Height of Window", validate = 'key', validatecommand=vcmd)
+entry_height = ctk.CTkEntry(frame_window_settings, placeholder_text= "Height of Window", validate = 'key', validatecommand=vcmd, textvariable=window_height)
 entry_height.place(x=55, y=40)
 label_left_entry_height = ctk.CTkLabel(frame_window_settings, text="Height")
 label_left_entry_height.place(x=10, y=40)
@@ -668,6 +821,11 @@ combo_theme_selector.set('Blue')
 button_apply_settings = ctk.CTkButton(frame_window_settings, text="Apply Settings", width=100, height = 60, corner_radius=20, command=apply_window_settings)
 button_apply_settings.place(x=250, y = 10)
 
+switch_resizable_window = ctk.CTkSwitch(frame_window_settings, text="Window Resizable? // Only Editing Window, not final app", command=toggle_resize)
+switch_resizable_window.place(x=10, y= 140)
+
+editor_window.bind_all("<Control r>", toggle_resize)
+
 frame_window_settings.pack(pady=0)
 # windows settings end
 
@@ -676,15 +834,15 @@ app = create_app_window()
 
 # active widgets ui begins, will reimplement as a tree later: https://github.com/TomSchimansky/CustomTkinter/discussions/524
 label_active_widgets = ctk.CTkLabel(editor_window, text="Active Widgets")
-label_active_widgets.place(x=15, y=200)
+label_active_widgets.place(x=15, y=230)
 optionmenu_add_widget = ctk.CTkOptionMenu(editor_window, values=[item for item in widget_types.keys()], width = 30, height=20, command=create_widget)
-optionmenu_add_widget.place(x=390, y = 214, anchor="e")
+optionmenu_add_widget.place(x=390, y = 243, anchor="e")
 
 frame_widgets = WidgetHandler(editor_window, width=355, height=250)
 
 active_widgets = []
 
-frame_widgets.place(x=10,y=230)
+frame_widgets.place(x=10,y=260)
 # active widgets ui ends
 
 current_widget = None

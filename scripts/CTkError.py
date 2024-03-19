@@ -6,8 +6,12 @@ class CTkError(ctk.CTkFrame):
         ## Geometry and Theme Settings
 
         self.top_level = ctk.CTkToplevel(self)
+        self.top_level.focus_set()
 
-        self.top_level.geometry(f"{size_x}x{size_y}")
+        print(self.winfo_screenwidth()/2 - self.winfo_width())
+        print(self.winfo_screenheight()/2 - self.winfo_height())
+
+        self.top_level.geometry(f"{size_x}x{size_y}+{int(self.winfo_screenwidth()/2 - self.winfo_width())}+{int(self.winfo_screenheight()/2 - self.winfo_height())}")
         self.top_level.title(title)
         self.top_level.resizable(False, False)
 
@@ -19,7 +23,7 @@ class CTkError(ctk.CTkFrame):
 
         if(button_1_text and not button_2_text):
             self.Button_0 = ctk.CTkButton(self.top_level,corner_radius=20, width=100,text=button_1_text, command=lambda: self.destroy())
-            self.Button_0.grid(row=1, column=1,pady=(0,20))
+            self.Button_0.grid(row=1, column=1,pady=(0,10))
 
         if(button_2_text):
             self.Button_0 = ctk.CTkButton(self.top_level,corner_radius=20, width=100,text=button_1_text, command=lambda: self.destroy())
@@ -27,3 +31,5 @@ class CTkError(ctk.CTkFrame):
 
             self.Button_0 = ctk.CTkButton(self.top_level,corner_radius=20,text=button_2_text, command=lambda: self.destroy())
             self.Button_0.grid(row=1, column=2)
+
+        self.top_level.attributes('-topmost', True)

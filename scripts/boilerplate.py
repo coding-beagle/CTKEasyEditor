@@ -129,7 +129,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
         text = ""
         kwargs = widget.get("kwargs")
 
-        arguments = f"master={self.root}"
+        arguments = widget['master'].replace(" ", "_")
         self.image_exists = False
 
         widget_name = widget.get("widget_id")
@@ -162,7 +162,10 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
             text += f"\n{'        self.' if self.export_oop else ''}image_{widget_name} = {self.ctk_module}.CTkImage(dark_image=Image.open('{output_src}/assets/{filename}'), size=({im_x}, {im_y}))"
 
         if(self.export_oop):
-            arguments = arguments.replace( f"master={self.root}", "self")
+            arguments = arguments.replace(f"{widget['master'].replace(' ', '_')}", f"self.{widget['master'].replace(' ', '_')}")
+            if(arguments == f"self.{self.root}"):
+                arguments="self"
+                
 
         x,y = widget.get("location")
 
@@ -178,7 +181,7 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
 
         text += f"""
 {"        self." if self.export_oop else ""}{widget_name} = {self.ctk_module}.{widget_type}({arguments}{f",command={'self.' if self.export_oop else ''}{widget_command}" if widget_command is not None else ""})
-{"        self." if self.export_oop else ""}{widget_name}.place(x={x}, y={y})\n"""
+{"        self." if self.export_oop else ""}{widget_name}.place(x={int(x)}, y={int(y)})\n"""
         return text
 
     def main_loop(self):

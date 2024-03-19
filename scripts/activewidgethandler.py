@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from icecream import ic
-from collections import OrderedDict
+from CTkError import CTkError
 
 class WidgetName(ctk.CTkFrame):
     def __init__(self, *args,
@@ -13,13 +13,18 @@ class WidgetName(ctk.CTkFrame):
                  name_change_cb,
                  move_up_cb,
                  move_down_cb,
+                 change_master_cb,
                  **kwargs):
         super().__init__(*args, width=width, height=height, **kwargs)
 
-        self.columnconfigure(0, weight=10)  # Label column
-        self.columnconfigure(1, weight=1)  # Expanding middle column
-        self.columnconfigure(2, weight=0)  # Edit button column
-        self.columnconfigure(3, weight=0)  # Delete button column
+        self.columnconfigure(0, weight=5)  # Label column
+        self.columnconfigure(1, weight=5)
+        self.columnconfigure(2, weight=1)  # Expanding middle column
+        self.columnconfigure(3, weight=0)  # Edit button column
+        self.columnconfigure(4, weight=0)  # Delete button column
+
+        self.masters = None
+        self.change_master = change_master_cb
 
         self.widget_ref = widget
 
@@ -30,7 +35,7 @@ class WidgetName(ctk.CTkFrame):
         self.move_up = move_up_cb
         self.move_down = move_down_cb
 
-        self.entry = ctk.CTkEntry(self)
+        self.entry = ctk.CTkEntry(self, width=120)
         self.text = tk.StringVar(self.entry, self.widget_ref.get("widget_id"))
         self.old_name = self.widget_ref.get("widget_id")
 
@@ -42,16 +47,28 @@ class WidgetName(ctk.CTkFrame):
         self.entry.bind('<FocusOut>', self.stop_edit_text)
 
         self.edit_button = ctk.CTkButton(self, font=('roboto', -20),text="⛭", command=edit_button_cb, width=40, height=40)
-        self.edit_button.grid(column=2, row=0, padx=2,pady=2, sticky='e', rowspan=2)
+        self.edit_button.grid(column=3, row=0, padx=2,pady=2, sticky='e', rowspan=2)
         
         self.remove_button = ctk.CTkButton(self, font=(('roboto', -25)), text="×", command=delete_button_cb, width=40, height=40)
-        self.remove_button.grid(column=3, row=0, padx=2,pady=2, sticky='e', rowspan=2)
+        self.remove_button.grid(column=4, row=0, padx=2,pady=2, sticky='e', rowspan=2)
+
+        self.optionmenu_masters = ctk.CTkOptionMenu(self, font=('roboto', -12), command=lambda e: self.switch_master(e), width=135, height=40, values=["root"],dynamic_resizing=False)
+        self.optionmenu_masters.grid(column=1, row=0, padx=3, sticky='e', rowspan=2)
 
         self.up_button = ctk.CTkButton(self, font=('roboto', -10), text='⮝', width=20,height=10, command=self.move_up)
-        self.up_button.grid(column=1, row=0, sticky='ne', pady=(2,0), padx=(0,1))
+        self.up_button.grid(column=2, row=0, sticky='ne', pady=(2,0), padx=(0,1))
 
         self.down_button = ctk.CTkButton(self, font=('roboto', -10), text='⮟', width=20,height=10, command=self.move_down)
-        self.down_button.grid(column=1, row=1, sticky='se', pady=(0,2), padx=(0,1))
+        self.down_button.grid(column=2, row=1, sticky='se', pady=(0,2), padx=(0,1))
+
+    def switch_master(self, master):
+        try:
+            master_ref = [i for i in self.masters if i['Name'] == master][0]
+            self.change_master(self.widget_ref, master_ref)
+            self.optionmenu_masters.set(master)
+        except TypeError:
+            self.update_masters()
+            self.optionmenu_masters.set(self.masters[0]['Name'])
 
     def edit_text(self, event):
         self.entry.configure(state="normal")
@@ -70,20 +87,20 @@ class WidgetName(ctk.CTkFrame):
             self.entry.delete(0, tk.END)
             self.entry.insert(0, self.old_name)
 
-            self.top_level_error = ctk.CTkToplevel()
-            self.top_level_error.geometry("250x100")
-            self.top_level_error.attributes('-topmost', 'true')
-            self.top_level_error.title(f"Error")
-            self.top_level_error.resizable(False, False)
-            self.text_top_level_error = ctk.CTkLabel(self.top_level_error,text="Widget names cannot\nbe the same!")
-            self.text_top_level_error.pack(pady=(20,10))
-            self.button_top_level_error = ctk.CTkButton(self.top_level_error, text="Okay", command=lambda: self.top_level_error.destroy())
-            self.button_top_level_error.pack(pady=(0,20))
+            CTkError(self.master, button_1_text="Okay", error_message="Widgets cannot have the same name!",size_x=150, size_y=120)
 
         self.entry.configure(state="disabled")
     
     def get_widget(self):
         return self.widget_ref
+    
+    def update_masters(self):
+        self.optionmenu_masters.configure(values=[i['Name'] for i in self.masters])
+        try:
+            master = [j['Name'] for j in self.masters if self.widget_ref['master'] == j['Name']][0]
+            self.optionmenu_masters.set(master)
+        except:
+            pass
 
 
 class WidgetHandler(ctk.CTkScrollableFrame):
@@ -95,12 +112,18 @@ class WidgetHandler(ctk.CTkScrollableFrame):
         self.active_row_widgets = []
         self.columnconfigure(0, weight=10)
 
-    def add_widget(self, widget, edit_cb, delete_cb, name_change_cb, move_up_cb, move_down_cb):
+    def add_widget(self, widget, edit_cb, delete_cb, name_change_cb, move_up_cb, move_down_cb, masters_list, change_master_command):
         self.widget_data_dict = {"widget": widget,  "edit_cb": edit_cb, "delete_cb": delete_cb, "name_change_cb": name_change_cb, "move_up": move_up_cb, "move_down": move_down_cb}
         self.active_widgets.append(self.widget_data_dict)
-        new_widget = WidgetName(self, height=30,width=300,widget=widget, edit_button_cb=edit_cb, delete_button_cb=delete_cb, name_change_cb=name_change_cb, move_up_cb=move_up_cb,move_down_cb=move_down_cb)
+        new_widget = WidgetName(self, height=30,width=300,widget=widget, edit_button_cb=edit_cb, delete_button_cb=delete_cb, name_change_cb=name_change_cb, move_up_cb=move_up_cb,move_down_cb=move_down_cb, change_master_cb=change_master_command)
         self.active_row_widgets.append(new_widget)
         new_widget.grid(row=len(self.active_widgets), sticky='ew')
+        self.update_masters_list(masters_list)
+
+    def update_masters_list(self, list):
+        for widget in self.active_row_widgets:
+            widget.masters = list
+            widget.update_masters()
 
     # def update_grid(self):   # redraws the entire grid
     #     self.active_row_widgets = []

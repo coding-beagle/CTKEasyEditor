@@ -22,15 +22,15 @@ Other platforms must download and run python code yourself (I can't figure out c
 
 [Advanced Install Instructions](documentation\install.md)
 
-![alt text](Screenshots/snappingupdate.png)
+![alt text](<Screenshots/Master Update.png>)
 
 This tool is still in development, please report any bugs or issues under the issues tab.
 Right now it seems to work okay, and the current implementation includes:
 
 - **Latest Update**:
-  - Improved Widget Snapping, including a new grid snapping option (Accessed through the preference handler, or CTRL + G) 
-  - Grid resolution can be changed by CTRL + Arrow Keys
-  - Other minor bug fixes and refactoring.
+  - Added the ability to change widgets' parents on the fly.
+  - Improved snapping capabilities even further
+  - Made window dynamically resizable.
 
 - Easy Application Window Settings Management
 - Easy Active Widgets manager
@@ -40,6 +40,7 @@ Right now it seems to work okay, and the current implementation includes:
 - Export to OOP and Procedural files
 - Preference Handler (i.e. names of modules, root element, etc)
 - Saving and opening of projects
+- Change widgets' parents on the fly!
 
 To be implemented soon:
 
@@ -57,4 +58,5 @@ Hotkeys & Shortcuts:
 - The standard save, save as and open hotkeys, i.e. ctrl+s, ctrl+shift+s, ctrl+o, etc
 - Control G --> Open the grid aligner
 - Control + arrow keys --> Adjust the grid size
+- Control R --> Toggle Window Size Adjustability
 

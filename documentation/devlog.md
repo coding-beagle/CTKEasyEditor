@@ -1,8 +1,39 @@
+**11-03-2024**
+
+Todo:
+
+- Errors get thrown if widget is below master in active_widgets
+  - I.e. Button gets created first, then frame. When button master is set to frame, we delete everything, and then redraw a new. Button gets created before frame is drawn, which gives error.
+- Similarly, when master widget is deleted, children widgets are not deleted from active_widgets
+
+Completed:
+
+- Added window resizing functionality
+- Refactored CTkError to display in middle of screen
+- Made good headway into resolving issues with widget height reordering
+
+**01-03-2024**
+
+**06-03-2024**
+
+Todo:
+
+- Errors get thrown if widget is below master in active_widgets
+  - I.e. Button gets created first, then frame. When button master is set to frame, we delete everything, and then redraw a new. Button gets created before frame is drawn, which gives error.
+- Similarly, when master widget is deleted, children widgets are not deleted from active_widgets
+
+Completed:
+
+- Added basic functionality for master switching
+
 **01-03-2024**
 
 Todo: 
 
 - Fix widgets editing others
+
+Completed:
+- Fixed duplicate widget editing 
 
 **03-02-2024**
 Todo:

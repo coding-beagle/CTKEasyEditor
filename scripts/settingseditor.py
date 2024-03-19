@@ -110,12 +110,15 @@ class AttributeEditorWindow(ctk.CTkFrame):
         
         self.check_attributes(self.attributes_to_edit)
 
-        # editor_size,editor_offset_x, editor_offset_y = self.master.geometry().split("+")
+        editor_size, editor_offset_x, editor_offset_y = self.master.geometry().split("+")
         # _, editor_size_y = editor_size.split("x")
-        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(self.editor_offset_x)+10}+{int(self.editor_offset_y)}")    # ensures the window always gets created below to the editor
+        self.toplevel.geometry(f"{self.size_x}x{self.size_y}+{int(editor_offset_x)+10}+{int(editor_offset_y)}")    # ensures the window always gets created below to the editor
     
         # self.populate_existing_fields()        
     def update_attributes(self):
+
+        # ic(self.kwarg_list)
+
         for (value,kwarg) in self.kwarg_list.items():
             self.widget_being_edited["kwargs"].update({value:kwarg})
 
@@ -125,13 +128,17 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.widget_being_edited = widget_to_edit
         self.widget_type = (self.widget_being_edited.get("widget_name"))
         self.attributes_to_edit = self.edit_dict.get(self.widget_type)
+        # ic(self.kwarg_list)
+        self.kwarg_list = {}
+        self.kwarg_list = self.widget_being_edited['kwargs']
+        # ic(self.kwarg_list)
+        # ic(self.widget_being_edited['kwargs'])
 
         self.size_x = 300
         self.size_y = 50
         try:
             self.toplevel.geometry(f"300x50")
         except:
-
             self.toplevel = ctk.CTkToplevel()
             self.toplevel.title(f"Widget Properties Editor")
             self.toplevel.resizable(False, False)
@@ -152,15 +159,17 @@ class AttributeEditorWindow(ctk.CTkFrame):
         self.button_apply.place(x=190, y=10)
     
         self.kwarg_list = self.widget_being_edited["kwargs"]
+
+        # ic(self.widget_being_edited['widget_id'])
     
         self.check_attributes(self.attributes_to_edit)
         self.toplevel.geometry(f"{self.size_x}x{self.size_y}")
 
-    
     def check_attributes(self, attributes_to_edit):
         attributes_to_add = []
         temp_frame_height = 0
-        self.kwarg_list = {}
+        # self.kwarg_list = {}
+        # self.kwarg_list = self.widget_being_edited['kwargs']
 
         for attribute in attributes_to_edit:
             attribute_info = self.editable_attributes.get(attribute)
