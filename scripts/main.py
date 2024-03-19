@@ -131,7 +131,7 @@ def on_drag_start(event):
 def check_other_widgets(widget_x_mid, widget_y_mid, widget, test_x, widget_half_x, widget_half_y):
     snapping_sensitivity = int(export_preferences["Snapping Sensitivity"]["value"])
     for active_widget in active_widgets:
-        if(widget == active_widget.get("widget") or active_widget['widget'].master == widget): 
+        if(widget == active_widget.get("widget") or active_widget['widget'].master == widget or find_widget_in_active_widgets(widget)['master'] != active_widget['master']): 
             # ic(active_widget['master'])
             continue
         else:

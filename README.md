@@ -22,7 +22,7 @@ Other platforms must download and run python code yourself (I can't figure out c
 
 [Advanced Install Instructions](documentation\install.md)
 
-![alt text](<Screenshots/Master Update.png>)
+![alt text](<screenshots/Master Update.png>)
 
 This tool is still in development, please report any bugs or issues under the issues tab.
 Right now it seems to work okay, and the current implementation includes:
