@@ -77,7 +77,7 @@ class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callb
     def __init__(self):
         super().__init__()
         ## Geometry and Theme Settings
-        {self.ctk_module}.set_appearance_mode("dark")     # todo add these
+        {self.ctk_module}.set_appearance_mode("dark")     
         {self.ctk_module}.set_default_color_theme("{theme}")
 
         self.geometry("{size_x}x{size_y}")
@@ -102,8 +102,8 @@ class {self.classname}({self.ctk_module}.CTk): {self.callback_text if self.callb
 {self.write_callbacks(active_widgets_list)}
             
 ## Geometry and Theme Settings
-{self.ctk_module}.set_appearance_mode("dark")     # todo add these
-{self.ctk_module}.set_default_color_theme("dark-blue")
+{self.ctk_module}.set_appearance_mode("dark") 
+{self.ctk_module}.set_default_color_theme("{theme}")
 
 {self.root} = {self.ctk_module}.CTk()
 {self.root}.geometry("{size_x}x{size_y}")
@@ -129,7 +129,13 @@ icon_path = ImageTk.PhotoImage(file="{output_src}/assets/{filename}")
         text = ""
         kwargs = widget.get("kwargs")
 
-        arguments = widget['master'].replace(" ", "_")
+        if(widget['master'] != self.root):
+            arguments = widget['master'].replace(" ", "_")
+        else:
+            if(self.export_oop):
+                arguments = "self"
+            else:
+                arguments = self.root
         self.image_exists = False
 
         widget_name = widget.get("widget_id")
