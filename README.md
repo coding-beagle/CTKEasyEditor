@@ -28,6 +28,7 @@ This tool is still in development, please report any bugs or issues under the is
 Right now it seems to work okay, and the current implementation includes:
 
 - **Latest Update**:
+  - Fixed a bug with the widgets' masters being exported incorrectly if the parent was the root element.
   - Added the ability to change widgets' parents on the fly.
   - Improved snapping capabilities even further
   - Made window dynamically resizable.
